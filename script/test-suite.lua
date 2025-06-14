@@ -11,7 +11,10 @@ elseif script then
     local event_lib = require("__machine-upgrades__.script.event-lib")
     local function register()
         remote.call("machine-upgrades-techlink", "add_technology_effect", 
-                "automation-science-pack", "assembling-machine", {speed=0.1})        
+                "automation-science-pack", "assembling-machine-1", {speed=0.1})        
     end
     event_lib.on_init("test-suite", register)
+    event_lib.on_configuration_changed("test-suite", register)
 end
+
+

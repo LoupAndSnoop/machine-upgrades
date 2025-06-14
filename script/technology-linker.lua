@@ -164,7 +164,7 @@ remote.add_interface("machine-upgrades-techlink",{
         local new_tech_effect = {
             technology_name = technology_name,
             entity_name = entity_name,
-            effect = util.table.deepcopy(effect),
+            effect = mupgrade_lib.deepcopy(effect),
             modules = modules,
         }
 
