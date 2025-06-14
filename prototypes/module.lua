@@ -104,9 +104,20 @@ for _, module in  pairs(modules) do
   end
 end
 
---TODO: Negative modules, and/or bigger modules?
+--Negative modules:
+local negative_modules = {}
+for _, module in pairs(modules) do
+  local new_mod = util.table.deepcopy(module)
+  new_mod.name = new_mod.name .. "-negative"
+  new_mod.localised_name = {"", "item-name." .. module.name, "item-name.mupgrade-module-negative-type"}
+  for key, value in pairs(new_mod.effect) do
+    new_mod.effect[key] = - value
+  end
+  table.insert(negative_modules, new_mod)
+end
 
 data:extend(modules)
+data:extend(negative_modules)
 
 --#endregion
 
