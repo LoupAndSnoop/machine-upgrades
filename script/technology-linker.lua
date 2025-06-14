@@ -9,7 +9,7 @@ local module_counter = require("__machine-upgrades__/script/module-counter")
 ---@field entity_name string
 ---@field technology_name string Name of the technology prototype from which this effect starts
 ---@field effect ModuleEffects
----@field modules table<string, uint> Dictionary with counts of modules that make the effect (just 1 level worth)
+---@field modules table<string, uint> Dictionary of counts of modules that make the effect (just 1 level worth)
 local MUTechEffect={}
 
 ---Whenever we have an update, register this entity to be updated.
@@ -152,7 +152,7 @@ remote.add_interface("machine-upgrades-techlink",{
         assert(prototypes.technology[technology_name],"Invalid technology name was passed: " .. technology_name)
         assert(prototypes.entity[entity_name],"Invalid entity name was passed: " .. entity_name)
 
-        local modules = module_counter(effect)
+        local modules = module_counter.effect_to_module_counts(effect)
         --If no modules, then we actually want to do a removal
         if not modules or table_size(modules) == 0 then
             remove_technology_effect(technology_name, entity_name)

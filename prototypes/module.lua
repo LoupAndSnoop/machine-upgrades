@@ -1,7 +1,7 @@
 --Defines fake modules for the mod to use, and a fake beacon to put them in
 
 --#region modules
-local icon_tint = {1,0.9,1}
+local icon_tint = {1,0.8,1}
 local modules = {
     {
       name = "mupgrade-module-prod",
@@ -18,24 +18,11 @@ local modules = {
     },
     {
       name = "mupgrade-module-speed",
-      icons = {{icon="__base__/graphics/icons/productivity-module.png", tint=icon_tint}},
+      icons = {{icon="__base__/graphics/icons/speed-module.png", tint=icon_tint}},
       color_hint = { text = "S" },
       category = "speed",
       order = "zzzzzz[hidden]--b[hidden-modules]-b",
       effect =  {speed=0.05},
-      beacon_tint =
-      {
-        primary = {0.441, 0.714, 1.000, 1.000}, -- #70b6ffff
-        secondary = {0.388, 0.976, 1.000, 1.000}, -- #63f8ffff
-      },
-    },
-    {
-      name = "mupgrade-module-quality",
-      color_hint = { text = "Q" },
-      icons = {{icon="__base__/graphics/icons/productivity-module.png", tint=icon_tint}},
-      category = "quality",
-      order = "zzzzzz[hidden]--mub[hidden-modules]-d",
-      effect =  {quality = 0.1},
       beacon_tint =
       {
         primary = {0.441, 0.714, 1.000, 1.000}, -- #70b6ffff
@@ -74,7 +61,7 @@ if mods["quality"] then
     local quality_module = {
       name = "mupgrade-module-quality",
       color_hint = { text = "Q" },
-      icons = {{icon="__base__/graphics/icons/productivity-module.png", tint=icon_tint}},
+      icons = {{icon="__quality__/graphics/icons/quality-module.png", tint=icon_tint}},
       category = "quality",
       order = "zzzzzz[hidden]--b[hidden-modules]-d",
       effect =  {quality = 0.1},

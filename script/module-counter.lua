@@ -25,14 +25,14 @@ local module_table = {}
 for category, modules in pairs(module_effect_categories) do
     assert(table_size(modules) == 2, "I'm expecting to find exactly 1 positive and 1 negative module under this category (" 
         .. category .. "), but I found these: " .. serpent.block(modules))
-    assert(modules[1].effect[category] * modules[2].effect[category] < 0, "I expected the modules for this category (" .. category 
+    assert(modules[1].module_effects[category] * modules[2].module_effects[category] < 0, "I expected the modules for this category (" .. category 
         .. ") to have effects that are opposite in sign! " .. serpent.block(modules))
-    assert(math.abs(modules[1].effect[category]) == math.abs(modules[2].effect[category]), "Positive and negative modules for this category (" .. category
+    assert(math.abs(modules[1].module_effects[category]) == math.abs(modules[2].module_effects[category]), "Positive and negative modules for this category (" .. category
         .. ") were supposed to have equal magnitude in effect, but opposite sign! " .. serpent.block(modules))
-    local positive_index = (modules[1].effect[category] > 0) and 1 or 2
+    local positive_index = (modules[1].module_effects[category] > 0) and 1 or 2
     module_table[category] = {
         positive_module_name = modules[positive_index].name,
-        module_magnitude = modules[positive_index].effect[category],
+        module_magnitude = modules[positive_index].module_effects[category],
         negative_module_name = modules[3-positive_index].name,
     }
 end
@@ -42,7 +42,7 @@ end
 
 ---Module effects go in. Out goes a dictionary of how many of what modules are needed to make that effect. Just for 1 level's worth.
 ---@param effect ModuleEffects
----@return table<string, uint>[] modules Dictionary of modules => how many need to be added
+---@return table<string, uint> modules Dictionary of modules => how many need to be added
 ---@return uint total_modules total number of modules for this effect
 function module_counter.effect_to_module_counts(effect)
     local modules = {}
@@ -55,7 +55,7 @@ function module_counter.effect_to_module_counts(effect)
         else mod_name = module_table[category].positive_module_name end
 
         assert(mod_count > 0, "Got a non-zero number of required modules!")
-        table.insert(modules, {mod_name, mod_count})
+        modules[mod_name] = mod_count --table.insert(modules, {mod_name, mod_count})
         total_modules = total_modules + mod_count
     end
 
