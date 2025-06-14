@@ -62,6 +62,28 @@ function module_counter.effect_to_module_counts(effect)
     return modules, total_modules
 end
 
+---Get a table that includes the total moduling for the given beacon.
+---@param entity_name string
+---@return table<string, uint> module_total table of module-name => module count
+---@return uint total_modules Count of total modules
+function module_counter.get_total_moduling(entity_name)
+    local tech_effects = storage.linked_entity_prototypes[entity_name]
+    if not tech_effects then return {}, 0 end
+    
+    local module_total = {}
+    local total_modules = 0
+    for _, effect in pairs(tech_effects) do
+        for module_name, count in pairs(effect.modules) do
+            total_modules = total_modules + count
+            if not module_total[module_name] then module_total[module_name] = count
+            else module_total[module_name] = module_total[module_name] + count
+            end
+        end
+    end
+
+    return module_total, total_modules
+end
+
 
 
 return module_counter

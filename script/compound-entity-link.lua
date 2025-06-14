@@ -3,8 +3,8 @@ local entity_linker = {}
 
 
 local function initialize()
-    ---Dictionary of parent entity => hashset of child entities.
-    ---@type table<LuaEntity, table<LuaEntity,boolean>> 
+    ---Dictionary of parent entity => array of child entities.
+    ---@type table<LuaEntity, LuaEntity[]>> 
     storage.compound_entity_parent_to_children = storage.compound_entity_parent_to_children or {}
 
     ---Dictionary of child entity => its parent entity
@@ -26,9 +26,15 @@ end
 function entity_linker.link_entities(parent, child)
     if not parent.valid or not child.valid then return end
 
-    if not storage.compound_entity_parent_to_children[parent] then
-        storage.compound_entity_parent_to_children[parent] = {[child] = true}
-    else storage.compound_entity_parent_to_children[parent][child] = true
+    local children = storage.compound_entity_parent_to_children[parent]
+    if not children then
+        storage.compound_entity_parent_to_children[parent] = {child}
+    else 
+        --Check case where they are already linked => nothing to do
+        for _, entry in pairs(children) do
+            if entry == child then return end
+        end
+        table.insert(storage.compound_entity_parent_to_children[parent], child)
     end
 
     storage.compound_entity_child_to_parent[child] = parent
@@ -55,7 +61,7 @@ local function on_entity_destroyed(entity_deregister_id)
     local parent = storage.compound_entity_child_to_parent[entity] or entity
     assert(storage.compound_entity_parent_to_children[parent], "This entity isn't a parent!")
     local children = storage.compound_entity_parent_to_children[parent]
-    for child in pairs(children) do
+    for _, child in pairs(children) do
         if child.valid then child.destroy() end
         storage.compound_entity_child_to_parent[child] = nil
         storage.compound_entity_positions[child] = nil
@@ -93,13 +99,13 @@ local function on_entity_moved(entity)
         if not displace_entity.valid or entity == displace_entity then return end
         local current_position = displace_entity.position
         displace_entity.teleport({current_position.x + displacement.x, current_position.y + displacement.y},
-            entity.surface, false)
+            entity.surface, true)
         storage.compound_entity_positions[displace_entity] = displace_entity.position
     end
 
     entity_mid_move_lock = true
     displace(parent)
-    for child in pairs(children) do
+    for _, child in pairs(children) do
         displace(child)
     end
     entity_mid_move_lock = false
@@ -114,7 +120,7 @@ event_lib.on_configuration_changed("compound-entity-link-initialize", initialize
 event_lib.on_event(defines.events.on_object_destroyed, "compound-entity-update",
     function(event) on_entity_destroyed(event.registration_number) end)
 
-event_lib.on_event({defines.events.script_raised_teleported, }, "compound-entity-move",
+event_lib.on_event({defines.events.script_raised_teleported}, "compound-entity-move",
     function(event) on_entity_moved(event.entity) end)
 
 
