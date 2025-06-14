@@ -87,7 +87,7 @@ if mods["quality"] then
     table.insert(modules, quality_module)
 end
 
-
+--Add common fields
 local module_common = {
   type = "module",
   requires_beacon_alt_mode = false,
@@ -98,37 +98,17 @@ local module_common = {
   tier = 1,
   art_style = "vanilla",
 }
-
 for _, module in  pairs(modules) do
   for key, value in pairs(module_common) do
     module[key] = value
   end
 end
+
+--TODO: Negative modules, and/or bigger modules?
+
 data:extend(modules)
 
 --#endregion
-
---#region Beacon
-
-local mupgrade_beacon = util.table.deepcopy(data.raw["beacon"]["beacon"])
-mupgrade_beacon.name = "mupgrade-beacon"
-mupgrade_beacon.icons = util.extract_icon_info(mupgrade_beacon)
-mupgrade_beacon.hidden = true
-mupgrade_beacon.hidden_in_factoriopedia = true
-mupgrade_beacon.map_color = nil
-mupgrade_beacon.friendly_map_color = nil
-mupgrade_beacon.minable.result = nil
-mupgrade_beacon.energy_source = { type = "void" }
-mupgrade_beacon.allowed_effects = { "consumption", "speed", "productivity", "pollution"}
-if mods["quality"] then table.insert(mupgrade_beacon.allowed_effects, "quality") end
-mupgrade_beacon.supply_area_distance = 0.5
-mupgrade_beacon.module_slots = 100
-
-
-
-
---#endregion
-
 
 
 --[[
