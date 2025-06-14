@@ -4,16 +4,62 @@
 local module_counter = {}
 
 
+--All modules that belong to us
+--local module_names = {"mupgrade-module-prod", "mupgrade-module-quality", "mupgrade-module-speed", "mupgrade-module-efficiency","mupgrade-module-pollution"}
+local modules = {}
+local module_effect_categories = {}
+local all_modules = prototypes.get_item_filtered({{filter = "type", type = "module"}})
+for _, entry in pairs(all_modules) do
+    if prototypes.get_history("module", entry.name).created == "machine-upgrades" then
+        table.insert(modules, entry)
+        assert(table_size(entry.module_effects) == 1, "This module prototype has multiple effects! That is no good: " .. entry.name)
+        for key in pairs(entry.module_effects) do 
+            if module_effect_categories[key] then table.insert(module_effect_categories[key], entry)
+            else module_effect_categories[key] = {entry} end
+        end
+    end
+end
+
+--Now I need to get two for each category. Positive and negative.
+local module_table = {}
+for category, modules in pairs(module_effect_categories) do
+    assert(table_size(modules) == 2, "I'm expecting to find exactly 1 positive and 1 negative module under this category (" 
+        .. category .. "), but I found these: " .. serpent.block(modules))
+    assert(modules[1].effect[category] * modules[2].effect[category] < 0, "I expected the modules for this category (" .. category 
+        .. ") to have effects that are opposite in sign! " .. serpent.block(modules))
+    assert(math.abs(modules[1].effect[category]) == math.abs(modules[2].effect[category]), "Positive and negative modules for this category (" .. category
+        .. ") were supposed to have equal magnitude in effect, but opposite sign! " .. serpent.block(modules))
+    local positive_index = (modules[1].effect[category] > 0) and 1 or 2
+    module_table[category] = {
+        positive_module_name = modules[positive_index].name,
+        module_magnitude = modules[positive_index].effect[category],
+        negative_module_name = modules[3-positive_index].name,
+    }
+end
+
+
+
+
 ---Module effects go in. Out goes a dictionary of how many of what modules are needed to make that effect. Just for 1 level's worth.
 ---@param effect ModuleEffects
----@return table<string, uint> modules Dictionary of modules => how many need to be added
-function module_counter.get_modules(effect)
+---@return table<string, uint>[] modules Dictionary of modules => how many need to be added
+---@return uint total_modules total number of modules for this effect
+function module_counter.effect_to_module_counts(effect)
     local modules = {}
+    local total_modules = 0
+    for category, strength in pairs(effect) do
+        local mod_magnitude = module_table[category].module_magnitude
+        local mod_count = math.floor(math.abs(strength) / mod_magnitude + 0.01)
+        local mod_name
+        if strength < 0 then mod_name = module_table[category].negative_module_name
+        else mod_name = module_table[category].positive_module_name end
 
-    --TODO
+        assert(mod_count > 0, "Got a non-zero number of required modules!")
+        table.insert(modules, {mod_name, mod_count})
+        total_modules = total_modules + mod_count
+    end
 
-
-    return modules
+    return modules, total_modules
 end
 
 
