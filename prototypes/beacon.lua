@@ -79,7 +79,7 @@ local animation_list = beacon_debug_properties.graphics_set.animation_list
 for _, entry in pairs(animation_list) do
     entry.animation.scale = 0.2--animation.scale and (animation.scale / 2) or 0.1
     for _, layer in pairs(entry.animation.layers or {}) do
-        layer.scale = 10--layer.scale and (layer.scale / 2) or 0.1
+        layer.scale = 0.2--layer.scale and (layer.scale / 2) or 0.1
     end
 end
 
