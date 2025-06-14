@@ -4,12 +4,12 @@ local all_resistances = {}
 for _, type in pairs(data.raw["damage-type"]) do
   table.insert(all_resistances, {type = type.name, percent = 100})
 end
-
 local mupgrade_beacon = 
   {
-    type = "mupgrade-beacon",
-    name = "beacon",
-    icons = {{icon = "__base__/graphics/icons/beacon.png", tint = icon_tint}},
+    type = "beacon",
+    name = "mupgrade-beacon",
+    icons = {{icon = "__base__/graphics/icons/beacon.png", tint = {1,0.7,1}}},
+    order = "zzzzzz[hidden]-mua[mu beacon]-a",
     flags = {"placeable-player", "not-rotatable", "not-blueprintable"},--"hide-alt-info", "player-creation"},
     --minable = {mining_time = 0.2, result = "beacon"},
     fast_replaceable_group = "beacon",
@@ -27,13 +27,13 @@ local mupgrade_beacon =
     --Selecting related
     collision_box = {{-0.2, -0.2}, {0.1, 0.2}},
     collision_mask = {layers = {}},
-    selection_box = {{-0.2, -0.2}, {0.2, 0.2}},
+    selection_box = {{-0.4, -0.4}, {0.4, 0.4}},
     selectable_in_game = false,
 
     --damaged_trigger_effect = hit_effects.entity(),
     --drawing_box_vertical_extension = 0.7,
     allowed_effects = {"consumption", "speed", "pollution", "productivity"},
-    supply_area_distance = 1,
+    supply_area_distance = 0,
     
     map_color = nil,
     friendly_map_color = nil,
@@ -42,10 +42,11 @@ local mupgrade_beacon =
     
     --Job-related
     energy_source = {type = "void"},
-    energy_usage = 0,
+    energy_usage = "1kW",
+    heating_energy = "0kW",
     distribution_effectivity = 1,
     distribution_effectivity_bonus_per_quality_level = 0,
-    profile = {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+    profile = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},--{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
     beacon_counter = "same_type",
     module_slots = 200,
     icons_positioning =
@@ -67,11 +68,21 @@ local beacon_debug_properties = {
       width = 10,
       height = 10
     },
-    graphics_set = require("prototypes.entity.beacon-animations"),
+    graphics_set = util.table.deepcopy(data.raw.beacon.beacon.graphics_set),
     selection_priority = 100,
     selectable_in_game = true,
 }
 beacon_debug_properties.graphics_set.base_layer = "higher-object-above"
+beacon_debug_properties.graphics_set.top_layer = "higher-object-above"
+beacon_debug_properties.graphics_set.animation_layer = "higher-object-above"
+local animation_list = beacon_debug_properties.graphics_set.animation_list
+for _, entry in pairs(animation_list) do
+    entry.animation.scale = 0.2--animation.scale and (animation.scale / 2) or 0.1
+    for _, layer in pairs(entry.animation.layers or {}) do
+        layer.scale = 10--layer.scale and (layer.scale / 2) or 0.1
+    end
+end
+
 for key, value in pairs(beacon_debug_properties) do
   mupgrade_beacon[key] = value
 end

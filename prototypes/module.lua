@@ -1,14 +1,14 @@
 --Defines fake modules for the mod to use, and a fake beacon to put them in
 
 --#region modules
-local icon_tint = {1,0.5,1}
+local icon_tint = {1,0.9,1}
 local modules = {
     {
       name = "mupgrade-module-prod",
       icons = {{icon="__base__/graphics/icons/productivity-module.png", tint=icon_tint}},
       category = "productivity",
       color_hint = { text = "P" },
-      order = "zzzzzz[hidden]--b[hidden-modules]-a",
+      order = "zzzzzz[hidden]--mub[hidden-modules]-a",
       effect =  {productivity = 0.05},
       beacon_tint =
       {
@@ -34,7 +34,7 @@ local modules = {
       color_hint = { text = "Q" },
       icons = {{icon="__base__/graphics/icons/productivity-module.png", tint=icon_tint}},
       category = "quality",
-      order = "zzzzzz[hidden]--b[hidden-modules]-d",
+      order = "zzzzzz[hidden]--mub[hidden-modules]-d",
       effect =  {quality = 0.1},
       beacon_tint =
       {
@@ -47,7 +47,7 @@ local modules = {
       icons = {{icon="__base__/graphics/icons/efficiency-module.png", tint=icon_tint}},
       category = "efficiency",
       color_hint = { text = "E" },
-      order = "zzzzzz[hidden]--b[hidden-modules]-c",
+      order = "zzzzzz[hidden]--mub[hidden-modules]-c",
       effect =  {consumption = -0.05},
       beacon_tint =
       {
@@ -60,7 +60,7 @@ local modules = {
       icons = {{icon="__base__/graphics/icons/efficiency-module.png", tint=icon_tint}},
       category = "efficiency",
       color_hint = { text = "E" },
-      order = "zzzzzz[hidden]--b[hidden-modules]-e",
+      order = "zzzzzz[hidden]--mub[hidden-modules]-e",
       effect =  {pollution = -0.05},
       beacon_tint =
       {

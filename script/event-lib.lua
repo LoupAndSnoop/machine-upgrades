@@ -297,14 +297,14 @@ function lib.to_string()
 end
 
 --Give a global function call to print events.
-_G.rubia = rubia or {}
+_G.mupgrade = mupgrade or {}
 --Print all event handlers, to see what is currently subscribed.
-function rubia.print_events()
+function mupgrade.print_events()
     game.print(lib.to_string())
     log("Rubia event log:")
     log(lib.to_string())
 end
---/c __rubia__ rubia.print_events()
+--/c __machine-upgrades__ mupgrade.print_events()
 --#endregion
 
 return lib
