@@ -1,15 +1,31 @@
 --This file controls the runtime modification of entities in a generic way.
 local entity_modifier = {}
 
---Maintain a global cache stored of that specific entity
---string that corresponds to a handle of a specific sort of entity to store => array of that LuaEntity.
---storage.modified_entity_registry = storage.modified_entity_registry or {}
+
+--Initialize storage
+local function initialize()
+    ---@class (exact) MURegistryEntry
+    ---@field entity_hashset table<LuaEntity, boolean>
+    ---@field entity_filter EntitySearchFilters 
+    ---@field auto_modifier? string String used to look up a function and do it, for whenever an entity needs to be updated (or added to that cache)
+    local MURegistryEntry = {}
+
+    ---Maintain a global cache stored of that specific entity
+    ---string that corresponds to a handle of a specific sort of entity to store => hashset of that LuaEntity.
+    ---@type table<string, MURegistryEntry>
+    storage.modified_entity_registry = storage.modified_entity_registry or {}
+
+    ---Table of all entities which are registed to remove from the cache when destroyed.
+    ---@type table<uint, LuaEntity>
+    storage.modified_entity_deregistry = storage.modified_entity_deregistry or {}
+end
 
 
 --#region Modifier function registration and invocation
 --Dictionary of "function_name" => function. Must be populated on each session,
 --as functions cannot be serialized.
 local function_register = {}
+
 ---Add a key to the table, so function_register[function_name] => function_to_invoke
 --- The function should be of the form function(arguments[1], arguments[2]...)
 ---@param function_to_invoke function A function of LuaEntity
@@ -19,6 +35,7 @@ entity_modifier.register_function = function(function_name, function_to_invoke)
   assert(not function_register[function_name], "This function name has been added twice to the function lookup register: " .. function_name)
   function_register[function_name] = function_to_invoke
 end
+
 
 
 ---Assign a function to automatically call on every entity that enters
@@ -82,11 +99,18 @@ entity_modifier.create_entity_cache = function(entity_handler, entity_filter)
         end
     end
 
-    storage.modified_entity_registry = storage.modified_entity_registry or {}
+    --storage.modified_entity_registry = storage.modified_entity_registry or {}
     storage.modified_entity_registry[entity_handler] = {
         entity_hashset = entity_hashset,
         entity_filter = entity_filter,
     }
+end
+
+
+---Destroy this entity cache, and stop logging it
+---@param entity_handler string string that represents the ID associated with that entity category.
+entity_modifier.remove_entity_cache = function(entity_handler)
+    storage.modified_entity_registry[entity_handler] = nil
 end
 
 
@@ -96,8 +120,6 @@ end
 ---@param filter EntitySearchFilters
 local function entity_satisfies_filter(entity, filter)
     if not entity.valid then return false end
-
-    local reject = false
 
     --Reject by entity type. (most common case)
     if filter.name and (entity.name ~= (filter.name.name or filter.name)) 
@@ -113,7 +135,9 @@ local function entity_satisfies_filter(entity, filter)
         end
         if reject then return false end
     end]]
-    
+
+    local reject = false
+
     --Reject by ghost type
     if filter.ghost_name and (entity.ghost_name ~= (filter.ghost_name.name or filter.ghost_name)) then
         --Need to check by array
@@ -156,7 +180,7 @@ end
 
 ---LuaEntity was just built. Add it to caches as may be applicable.
 ---@param entity LuaEntity add this entity to the cache.
-entity_modifier.update_on_build = function(entity)
+local function update_on_build(entity)
     if not entity.valid then return end
 
     local to_deregister = false
@@ -178,14 +202,14 @@ entity_modifier.update_on_build = function(entity)
     --Make sure we deregister
     if to_deregister then
         local delist_ID = script.register_on_object_destroyed(entity)
-        storage.modified_entity_deregistry = storage.modified_entity_deregistry or {}
+        --storage.modified_entity_deregistry = storage.modified_entity_deregistry or {}
         storage.modified_entity_deregistry[delist_ID] = entity
     end
 end
 
 ---LuaEntity was just destroyed. Delist it.
 ---@param entity_reg_ID uint Entity registration ID
-entity_modifier.update_on_object_destroyed = function(entity_reg_ID)
+local function update_on_object_destroyed(entity_reg_ID)
     local entity = storage.modified_entity_deregistry 
         and storage.modified_entity_deregistry[entity_reg_ID]
 
@@ -194,6 +218,7 @@ entity_modifier.update_on_object_destroyed = function(entity_reg_ID)
     for _, entry in pairs(storage.modified_entity_registry or {}) do
         entry.entity_hashset[entity] = nil
     end
+    storage.modified_entity_deregistry[entity_reg_ID] = nil
 end
 
 
@@ -208,6 +233,13 @@ entity_modifier.apply_to_all_entities = function(entity_handler, execute)
     end
 end
 --#endregion
+
+--Event subscriptions
+local event_lib = require("__machine-upgrades__.script.event-lib")
+event_lib.on_init("entity-cache-initialize", initialize)
+event_lib.on_built("entity-cache-update", update_on_build)
+event_lib.on_event(defines.events.on_object_destroyed, "entity-cache-update",
+    function(event) update_on_object_destroyed(event.registration_number) end)
 
 
 return entity_modifier

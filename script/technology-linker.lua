@@ -12,11 +12,6 @@ local module_counter = require("__machine-upgrades__/script/module-counter")
 ---@field modules table<string, uint> Dictionary of counts of modules that make the effect (just 1 level worth)
 local MUTechEffect={}
 
----Whenever we have an update, register this entity to be updated.
----@param entity_name string
-local function update_entity(entity_name)
-    --TODO
-end
 
 local function initialize_storage()
     ---@type table<string, MUTechEffect[]> string of technology prototype => TechEffects
@@ -24,6 +19,14 @@ local function initialize_storage()
     ---@type table<string, MUTechEffect[]> string of entity prototype name => TechEffects
     storage.linked_entity_prototypes = storage.linked_technologies or {}
 end
+
+
+---Whenever we have an update, register this entity to be updated.
+---@param entity_name string
+local function update_entity(entity_name)
+    --TODO
+end
+
 
 ---Add a new technology effect.
 ---@param new_effect MUTechEffect

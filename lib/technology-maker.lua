@@ -48,5 +48,5 @@ function mupgrade_lib.make_modifier(base_icon, modifier, machine_name, stated_ef
 end
 
 --Test technology (example)
-table.insert(data.raw.technology["automation-science-pack"].effects,
-    mupgrade_lib.make_modifier({icon="__base__/graphics/icons/assembling-machine-1.png"}, "speed", "assembler", 10))
+--table.insert(data.raw.technology["automation-science-pack"].effects,
+--    mupgrade_lib.make_modifier({icon="__base__/graphics/icons/assembling-machine-1.png"}, "speed", "assembler", 10))
