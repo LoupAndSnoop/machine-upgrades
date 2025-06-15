@@ -116,7 +116,7 @@ entity_modifier.create_entity_cache = function(entity_handler, entity_filter)
     local entity_hashset = {}
     for _, surface in pairs(game.surfaces) do
         local surface_entities = surface.find_entities_filtered(entity_filter)
-        for _, entity in surface_entities do
+        for _, entity in pairs(surface_entities) do
             entity_hashset[entity] = true
         end
     end
@@ -255,6 +255,28 @@ entity_modifier.apply_to_all_entities = function(entity_handler, execute)
         if entity.valid then execute(entity) end
     end
 end
+
+---Print whatever is in the current registry.
+---@return string
+function entity_modifier.show_registry_stats()
+    local string = "Registry:\n"
+    for key, value in pairs(storage.modified_entity_registry or {}) do
+        string = string .. "Handler = " .. key .. ", Filter = " .. serpent.line(value.entity_filter) 
+            .. "\n     Entities = " .. table_size(value.entity_hashset) .. ", Auto-execute = " .. tostring(value.auto_modifier) .. "\n"
+    end
+    return string
+    
+end
+
+
+_G.mupgrade = mupgrade or {}
+--Print all event handlers, to see what is currently subscribed.
+function mupgrade.print_registry_stats()
+    local string = entity_modifier.show_registry_stats()
+    log(string)
+    game.print(string)
+end
+
 --#endregion
 
 --Event subscriptions

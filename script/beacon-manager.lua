@@ -61,7 +61,7 @@ end
 
 --local modules_to_add, total_count = module_counter.get_total_moduling(entity_name)
 
-local MAX_MODULE_COUNT = prototypes.entity("mupgrade-beacon").module_inventory_size
+local MAX_MODULE_COUNT = prototypes.entity["mupgrade-beacon"].module_inventory_size
 
 ---Go update all the entity handling for all entities tied to this handler.
 ---@param entity_handler string Handler for the relevant entity. This should NOT be automatically the same as the entity_name, so migration doesn't fuck everything up.
