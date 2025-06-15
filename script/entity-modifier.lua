@@ -84,7 +84,7 @@ end
 ---@return boolean result
 ---@return string? pre_existing_handler
 function entity_modifier.is_unique_filter(filter)
-    for handler, entry in pairs(storage.modified_entity_registry) do
+    for handler, entry in pairs(storage.modified_entity_registry or {}) do
         for key, value in pairs(entry.entity_filter) do
             if filter[key] ~= value then goto continue end 
         end

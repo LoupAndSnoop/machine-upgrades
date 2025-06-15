@@ -12,8 +12,8 @@ local function initialize()
     --storage.beacon_correlator = storage.beacon_correlator or {}
     ]]
 
-    ---Hashset of entity names, for entities still needing an update
-    ---@type table<string, boolean>
+    ---entity names => hashset of relevant forces, for entities still needing an update in that force
+    ---@type table<string, table<LuaForce, boolean>>
     storage.entities_needing_update = storage.entities_needing_update or {}
 end
 
@@ -65,7 +65,8 @@ local MAX_MODULE_COUNT = prototypes.entity["mupgrade-beacon"].module_inventory_s
 
 ---Go update all the entity handling for all entities tied to this handler.
 ---@param entity_handler string Handler for the relevant entity. This should NOT be automatically the same as the entity_name, so migration doesn't fuck everything up.
-local function update_all_entity_moduling(entity_handler)
+---@param force_set table<LuaForce, boolean> hashset of all forces for which we need to update.
+local function update_all_entity_moduling(entity_handler, force_set)
     local cached_entity_entry = storage.modified_entity_registry[entity_handler]
     if not cached_entity_entry then return end
     local entity_name = cached_entity_entry.entity_filter.name
@@ -74,24 +75,36 @@ local function update_all_entity_moduling(entity_handler)
     local cached_entities = cached_entity_entry.entity_hashset
     if not cached_entities or table_size(cached_entities) == 0 then return end --Nothing to update
 
-    local modules_to_add, total_count = module_counter.get_total_moduling(entity_name)
-    assert(total_count <= MAX_MODULE_COUNT, "Beacon module count exceeded. Please tell mod creator.")
-    
-    for entity in pairs(cached_entities) do
-        update_entity_moduling(entity, modules_to_add)
+    for force in pairs(force_set or {}) do
+        local modules_to_add, total_count = module_counter.get_total_moduling(entity_name, force)
+        assert(total_count <= MAX_MODULE_COUNT, "Beacon module count exceeded. Please tell mod creator.")
+        
+        for entity in pairs(cached_entities) do
+            update_entity_moduling(entity, modules_to_add)
+        end
     end
 end
 
 
 ---Set this entity-handler to be updated at next convenience
 ---@param entity_handler string String handler for that specific type of entity
-function beacon_manager.request_entity_update(entity_handler)
-    storage.entities_needing_update[entity_handler] = true
+---@param force LuaForce? optionally limit to just this lua force
+function beacon_manager.request_entity_update(entity_handler, force)
+    --All forces, if not specified
+    if not force then storage.entities_needing_update[entity_handler] = game.forces
+    else
+        local existing_forces = storage.entities_needing_update[entity_handler]
+        if existing_forces then existing_forces[force] = true
+        else storage.entities_needing_update[entity_handler] = {[force] = true}
+        end
+    end
+
+    
 end
 ---Update all entities that are currently in need of updating, all at once. This prevents duplicate calls.
 local function regular_update()
-    for entity_handler in pairs(storage.entities_needing_update or {}) do
-        update_all_entity_moduling(entity_handler)
+    for entity_handler, force_set in pairs(storage.entities_needing_update or {}) do
+        update_all_entity_moduling(entity_handler, force_set)
     end
     storage.entities_needing_update = {}
 end

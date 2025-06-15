@@ -62,23 +62,49 @@ function module_counter.effect_to_module_counts(effect)
     return modules, total_modules
 end
 
+
+---Output number of times this technology should count as researched.
+---@param technology LuaTechnology
+---@return int research_count
+local function technology_counter(technology)
+    if not technology.upgrade then
+        if technology.researched then return technology.level
+        else return technology.level - 1 end --Not researched, and not an upgrade
+    else --It is an upgrade 
+        local under_level = 0
+        for _, parent in pairs(technology.prerequisites) do
+            if parent.upgrade then under_level = parent.level; break end
+        end
+
+        if technology.researched then return technology.level - under_level
+        else return technology.level - under_level - 1 end
+    end
+end
+
 ---Get a table that includes the total moduling for the given beacon.
 ---@param entity_name string
+---@param force LuaForce relevant luaforce
 ---@return table<string, uint> module_total table of module-name => module count
 ---@return uint total_modules Count of total modules
-function module_counter.get_total_moduling(entity_name)
+function module_counter.get_total_moduling(entity_name, force)
     local tech_effects = storage.linked_entity_prototypes[entity_name]
     if not tech_effects then return {}, 0 end
     
     local module_total = {}
     local total_modules = 0
     for _, effect in pairs(tech_effects) do
+        --Need to find out how much that technology applies for this force
+        local multiplier = technology_counter(force.technologies[effect.technology_name])
+        if multiplier == 0 then goto continue end --No contribution
+
         for module_name, count in pairs(effect.modules) do
+            count = count * multiplier
             total_modules = total_modules + count
             if not module_total[module_name] then module_total[module_name] = count
             else module_total[module_name] = module_total[module_name] + count
             end
         end
+        ::continue::
     end
 
     return module_total, total_modules

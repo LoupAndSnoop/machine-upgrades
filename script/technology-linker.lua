@@ -29,10 +29,11 @@ end
 
 ---Whenever we have an update, register this entity to be updated.
 ---@param entity_name string
-local function update_entity(entity_name)
+---@param force LuaForce? Optionally limit update to just that force
+local function update_entity(entity_name, force)
     local entity_handler = storage.entity_name_to_handler[entity_name]
 
-    beacon_manager.request_entity_update(entity_handler)
+    beacon_manager.request_entity_update(entity_handler, force)
     --TODO
 end
 
@@ -181,7 +182,6 @@ remote.add_interface("machine-upgrades-techlink",{
             modules = modules,
         }
 
-        
         local filter = {name=entity_name}
         local is_unique, previous_handler = entity_modifier.is_unique_filter(filter)
         if not auto_merge_handler then
@@ -219,11 +219,29 @@ remote.add_interface("machine-upgrades-techlink",{
 })
 
 
-
-
+---Update everything from that tech, optionally limited to just that force.
+---@param technology_name string
+---@param force LuaForce?
+local function update_from_tech(technology_name, force)
+    local effects = storage.linked_technologies[technology_name]
+    for _, entry in pairs(effects or {}) do
+        update_entity(entry.entity_name, force)
+    end
+end
 
 --#endregion
 
 
 local event_lib = require("__machine-upgrades__.script.event-lib")
 event_lib.on_init("tech-link-initialize", initialize_storage)
+event_lib.on_configuration_changed("tech-link-initialize", initialize_storage)
+
+event_lib.on_event(defines.events.on_technology_effects_reset, "tech-link-tech-update-all",
+    function(event)
+        for key in storage.linked_technologies do
+            update_from_tech(key)
+        end
+    end)
+
+event_lib.on_event(defines.events.on_research_finished, "tech-link-update", function(event)
+  update_from_tech(event.research.name, event.research.force) end)
