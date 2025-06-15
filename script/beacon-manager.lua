@@ -6,12 +6,6 @@ local entity_modifier = require("__machine-upgrades__/script/entity-modifier")
 local beacon_manager = {}
 
 local function initialize()
-    --[[
-    ---Dictionary of parent entity => its beacon
-    ---@type table<LuaEntity, LuaEntity> 
-    --storage.beacon_correlator = storage.beacon_correlator or {}
-    ]]
-
     ---entity names => hashset of relevant forces, for entities still needing an update in that force
     ---@type table<string, table<LuaForce, boolean>>
     storage.entities_needing_update = storage.entities_needing_update or {}
@@ -110,10 +104,18 @@ local function update_beacon_on_build(entity)
 end
 entity_modifier.register_function("update-beacon", update_beacon_on_build)
 
+---Remove beacon from this entity
+---@param entity_no uint Unit id of entity from which to remove beacons.
+function beacon_manager.remove_beacon_from(entity_no)
+    entity_linker.kill_children_of(entity_no)
+end
+
+
 ---Set this entity-handler to be updated at next convenience
 ---@param entity_handler string String handler for that specific type of entity
 ---@param force LuaForce? optionally limit to just this lua force
 function beacon_manager.request_entity_update(entity_handler, force)
+    assert(entity_handler, "Null entity handler passed!")
     --All forces, if not specified
     if not force then storage.entities_needing_update[entity_handler] = 
         mupgrade_lib.dictionary_values_to_hashset(game.forces)
@@ -125,18 +127,41 @@ function beacon_manager.request_entity_update(entity_handler, force)
     end
 end
 ---Update all entities that are currently in need of updating, all at once. This prevents duplicate calls.
-local function regular_update()
+function beacon_manager.regular_update()
     for entity_handler, force_set in pairs(storage.entities_needing_update or {}) do
         update_all_entity_moduling(entity_handler, force_set)
     end
     storage.entities_needing_update = {}
 end
+--Cancel any pending updates
+function beacon_manager.cancel_updates() storage.entities_needing_update = {} end
 
 
 --Events
 local event_lib = require("__machine-upgrades__.script.event-lib")
 event_lib.on_init("beacon-manager-initialize", initialize)
 event_lib.on_configuration_changed("beacon-manager-initialize", initialize)
-event_lib.on_nth_tick(1, "beacon-manager-regular_update", regular_update)
+--event_lib.on_configuration_changed("beacon-manager-cancel-updates", cancel_updates)
+event_lib.on_nth_tick(1, "beacon-manager-regular_update", beacon_manager.regular_update)
 
 return beacon_manager
+
+
+
+---Beacon-removal
+--[[@param entity_name string name of entity from which to remove beacons.
+function beacon_manager.remove_beacons_from_all(entity_name)
+    if not entity.valid then return end
+    
+    local beacon_array = storage.compound_entity_parent_to_children[entity]    
+entity_linker.kill_children_of(entity_no)
+
+end
+---Beacon-removal
+---@param entity LuaEntity name of entity from which to remove beacons.
+local function remove_beacon_from(entity)
+    if not entity or not entity.valid then return end
+    local beacon_array = storage.compound_entity_parent_to_children[entity]    
+
+
+end]]

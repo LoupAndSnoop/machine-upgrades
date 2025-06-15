@@ -32,7 +32,7 @@ end
 ---@param force LuaForce? Optionally limit update to just that force
 local function update_entity(entity_name, force)
     local entity_handler = storage.entity_name_to_handler[entity_name]
-
+    assert(entity_handler, "No entity handler found for " .. entity_name)
     beacon_manager.request_entity_update(entity_handler, force)
 end
 
@@ -115,34 +115,44 @@ local function remove_technology_effect(technology_name, entity_name_input)
 end
 
 
---Remove ALL links
+--Remove ALL links. Include cleanup of beacons.
 local function clear_all_effects()
-    local entities_to_update = {}
-    for key in pairs(storage.linked_entity_prototypes) do
-        table.insert(entities_to_update, key)
+    local entity_no_to_clear = {}
+    for handler, entry in pairs(storage.modified_entity_registry) do
+        for entity_no in pairs(entry.entity_hashset) do
+            entity_no_to_clear[entity_no] = true
+        end
+    end 
+
+    for entity_no in pairs(entity_no_to_clear) do
+        beacon_manager.remove_beacon_from(entity_no)
     end
 
     storage.linked_entity_prototypes = {}
     storage.linked_technologies = {}
 
-    for _, entity_name in pairs(entities_to_update) do
-        update_entity(entity_name)
-    end
+    entity_modifier.clear_cache()
 end
 
 ---Return one big string that shows the links of all technologies. Used for debugging
 local function show_all_links()
-    local string = "Technologies linked (" .. tostring(table_size(storage.linked_technologies))"):\n"
+    local link_count = 0
+    for _, entry in pairs(storage.linked_technologies or {}) do
+        link_count = link_count + table_size(entry)
+    end
+
+    local string = "\nTechnologies linked (" .. tostring(table_size(storage.linked_technologies)) .. " technologies, "
+        .. tostring(link_count) .. " total links):\n"
     for _, entry in pairs(storage.linked_technologies or {}) do
         for _, effect in pairs(entry) do
-            string = "     " .. string .. tostring(effect.technology_name) .. " <=> " .. tostring(effect.entity_name) .. ""
+            string = "     " .. string .. tostring(effect.technology_name) .. " <=> " .. tostring(effect.entity_name) .. "\n"
         end
     end
     
-    string = string .. "Entities linked (" .. tostring(table_size(storage.linked_entity_prototypes))"):\n"
+    string = string .. "\nEntities linked (" .. tostring(table_size(storage.linked_entity_prototypes)) .. "):\n"
     for _, entry in pairs(storage.linked_entity_prototypes or {}) do
         for _, effect in pairs(entry) do
-            string = "     " .. string .. tostring(effect.entity_name) .. " <=> " .. tostring(effect.technology_name)
+            string = "     " .. string .. tostring(effect.entity_name) .. " <=> " .. tostring(effect.technology_name) .. "\n"
         end
     end
 
@@ -152,7 +162,7 @@ end
 
 _G.mupgrade_lib = mupgrade_lib or {}
 --Print all technology effect links, for debugging purposes
-function mupgrade_lib.print_links()
+function mupgrade_lib.print_technology_links()
     local string = show_all_links()
     log(string)
     game.print(string)
@@ -250,6 +260,7 @@ end
 local event_lib = require("__machine-upgrades__.script.event-lib")
 event_lib.on_init("tech-link-initialize", initialize_storage)
 event_lib.on_configuration_changed("tech-link-initialize", initialize_storage)
+event_lib.on_configuration_changed("tech-link-clear", clear_all_effects)
 
 event_lib.on_event(defines.events.on_technology_effects_reset, "tech-link-tech-update-all",
     function(event)
@@ -265,6 +276,20 @@ event_lib.on_event(defines.events.on_research_finished, "tech-link-update", func
 
 
 --[[
+    --In clear_cache
+    local entities_to_update = {}
+    for key in pairs(storage.linked_entity_prototypes) do
+        table.insert(entities_to_update, key)
+    end
+
+    beacon_manager.cancel_updates()
+    for _, entity_name in pairs(entities_to_update) do
+        update_entity(entity_name)
+    end
+    beacon_manager.regular_update()
+
+
+
     ---Add a specific effect to the given technology, to apply that module effect to the given entity.
     ---@param technology_name string
     ---@param entity_name string | string[]

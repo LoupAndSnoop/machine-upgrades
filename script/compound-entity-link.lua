@@ -52,7 +52,8 @@ end
 ---When an object is destroyed, if we are keeping tabs on it, update all the data/caches.
 ---If it was in a compound entity, make sure all parts of the entity die together.
 ---@param entity_deregister_id uint Entity registration id for on_object_destroyed
-local function on_entity_destroyed(entity_deregister_id)
+---@param spare_parent boolean if set true, do NOT destroy the parent in this call. Default false
+local function on_entity_destroyed(entity_deregister_id, spare_parent)
     if not storage.compound_entity_deregistry[entity_deregister_id] then return end
 
     local entity_no = storage.compound_entity_deregistry[entity_deregister_id]
@@ -60,7 +61,6 @@ local function on_entity_destroyed(entity_deregister_id)
     --Find the parent of this relationship.
     local parent_no = storage.compound_entity_child_to_parent[entity_no] or entity_no
     local children_no = storage.compound_entity_parent_to_children[parent_no]
-    --assert(children_no, "This entity isn't a parent! " .. tostring(parent_no))
     
     for _, child_no in pairs(children_no or {}) do
         local child = game.get_entity_by_unit_number(child_no)
@@ -70,7 +70,7 @@ local function on_entity_destroyed(entity_deregister_id)
     end
 
     local parent = game.get_entity_by_unit_number(parent_no)
-    if parent and parent.valid then parent.destroy() end
+    if parent and parent.valid and not spare_parent then parent.destroy() end
     storage.compound_entity_positions[parent_no] = nil
     storage.compound_entity_parent_to_children[parent_no] = nil
 
@@ -78,9 +78,24 @@ local function on_entity_destroyed(entity_deregister_id)
     storage.compound_entity_deregistry[entity_deregister_id] = nil
 end
 
+
+---Manually request all the children for a given entity to be destroyed, without also killing the parent.
+---This dissolves the compound entity. If passing child, go find the parent, and kill only the children.
+---@param entity_no uint Entity unit number
+function entity_linker.kill_children_of(entity_no)
+    --Find the parent of this relationship.
+    local parent_no = storage.compound_entity_child_to_parent[entity_no] or entity_no
+    local children_no = storage.compound_entity_parent_to_children[parent_no]
+    if not children_no then return end --This entity number isn't something we are tracking
+
+    local parent = game.get_entity_by_unit_number(parent_no)
+    local entity_deregister_id = script.register_on_object_destroyed(parent)
+    on_entity_destroyed(entity_deregister_id, true) --On-destruction function should take care of chain destruction
+end
+
+
 --This boolean lets us not respond repeatedly to entity teleporting calls recursively.
 local entity_mid_move_lock = false
-
 ---When one entity is moved, if it is in a compound entity, make sure to move everything together.
 ---@param entity LuaEntity
 local function on_entity_moved(entity)

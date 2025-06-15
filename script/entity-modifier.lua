@@ -21,7 +21,6 @@ local function initialize()
     storage.modified_entity_deregistry = storage.modified_entity_deregistry or {}
 end
 
-
 --#region Modifier function registration and invocation
 --Dictionary of "function_name" => function. Must be populated on each session,
 --as functions cannot be serialized.
@@ -134,9 +133,15 @@ end
 
 ---Destroy this entity cache, and stop logging it
 ---@param entity_handler string? string that represents the ID associated with that entity category.
-entity_modifier.remove_entity_cache = function(entity_handler)
+function entity_modifier.remove_entity_cache(entity_handler)
     if not entity_handler then return end
     storage.modified_entity_registry[entity_handler] = nil
+end
+
+---Clear whole cache. Everything gone. Make sure you're done using it!
+function entity_modifier.clear_cache()
+    storage.modified_entity_registry = {}
+    storage.modified_entity_deregistry = {}
 end
 
 ------Helpers
@@ -145,14 +150,6 @@ end
 local function array_find(array, value)
   for index, val in pairs(array) do
     if val == value then return index end
-  end
-  return false
-end
---If the input array contains a value such that check(value) = true, 
---then return its index (=true!) Otherwise, output false
-local function array_find_condition(array, condition)
-  for index, val in pairs(array) do
-    if condition(val) then return index end
   end
   return false
 end
@@ -167,20 +164,18 @@ local function entity_satisfies_filter(entity, filter)
 
     --Reject by entity type. (most common case)
     if filter.name then
-        if type(filter.name) ~= table then
-            if (entity.name ~= (filter.name.name or filter.name)) then return false end --Checks case of filter = string or LuaEntity/Prototype
-        elseif not array_find_condition(filter.name, function(entityID) --Case of array of ID
-                return entity.name == (entityID.name or entityID) end) then return false
+        local entity_name = entity.name
+        if type(filter.name) ~= "table" then
+            if (entity_name ~= (filter.name.name or filter.name)) then return false end --Checks case of filter = string or LuaEntity/Prototype
+        else
+            local found = false
+            for _, filter_name in pairs(filter.name) do
+                if (filter_name == entity_name) or (filter_name.name == entity_name) then
+                    found = true; break end
+            end
+            if not found then return false end
         end
     end
-    --[[if filter.name and (entity.name ~= (filter.name.name or filter.name)) then
-        --Need to check by array
-        reject = true
-        for _, entityID in filter.name do
-            reject = entity.name == (entityID.name or entityID)
-        end
-        if reject then return false end
-    end]]
 
     local reject = false
 
@@ -306,6 +301,9 @@ end
 local event_lib = require("__machine-upgrades__.script.event-lib")
 event_lib.on_init("entity-cache-initialize", initialize)
 event_lib.on_configuration_changed("entity-cache-initialize", initialize)
+--Cache needs to be cleared on_config_changed, but this needs to be timed with anything relying on that cache!
+--event_lib.on_configuration_changed("entity-cache-clear", clear_cache)
+
 event_lib.on_built("entity-cache-update", update_on_build)
 event_lib.on_event(defines.events.on_object_destroyed, "entity-cache-update",
     function(event) update_on_object_destroyed(event.registration_number) end)

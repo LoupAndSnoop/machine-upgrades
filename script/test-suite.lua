@@ -53,8 +53,26 @@ elseif script then
 end
 --#endregion
 
+--[[
+--#region Helpful console commands:
+--Get linked positions
+/c __machine-upgrades__ game.print(serpent.block(storage.compound_entity_positions))
+
+--Find out what we are logging
+/c __machine-upgrades__ mupgrade.print_registry_stats()
+
+--Show what is actually in each tech link
+/c __machine-upgrades__ mupgrade_lib.print_technology_links()
+
+--Show all event registrations
+--/c __machine-upgrades__ mupgrade.print_events()
+
+--#endregion
+]]
+
 
 --[[
+-------Scrapped test for items that lack module capability
 -- What to do in Data stage
 if data and data.raw and data.raw.module and table_size(data.raw.module) > 0 then
     table.insert(data.raw.technology["automation-science-pack"].effects,

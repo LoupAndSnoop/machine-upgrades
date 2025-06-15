@@ -2,7 +2,7 @@
 local modifier_key = {
     productivity = {name = {"description.productivity-bonus"}, icon = "__machine-upgrades__/graphics/upgrade-subicon-red.png"},
     speed = {name = {"description.speed-bonus"}, icon = "__machine-upgrades__/graphics/upgrade-subicon-cyan.png"},
-    efficiency = {name = {"description.efficiency-bonus"}, icon = "__machine-upgrades__/graphics/upgrade-subicon.png"},
+    efficiency = {name = {"description.consumption-bonus"}, icon = "__machine-upgrades__/graphics/upgrade-subicon.png"},
     pollution = {name = {"description.pollution-bonus"}, icon = "__machine-upgrades__/graphics/upgrade-subicon-orange.png"},
     quality = {name = {"description.quality-bonus"}, icon = "__machine-upgrades__/graphics/upgrade-subicon-purple.png"},
 }
@@ -44,7 +44,7 @@ function mupgrade_lib.make_modifier(base_icon, modifier_name, machine_name, stat
     --Make the description
     local sign = (stated_effect_strength > 0) and "+" or "-"
     local full_description = {"", machine_name or "modifier-description.mupgrade-default-effect-description",
-        " ", modifier_data.name, ": " .. sign .. tostring(stated_effect_strength) .. "%"}
+        ": ", modifier_data.name, " " .. sign .. tostring(stated_effect_strength) .. "%"}
 
     --Make the actual effect
     local effect = {
