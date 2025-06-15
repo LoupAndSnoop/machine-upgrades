@@ -59,9 +59,10 @@ local function on_entity_destroyed(entity_deregister_id)
 
     --Find the parent of this relationship.
     local parent_no = storage.compound_entity_child_to_parent[entity_no] or entity_no
-    assert(storage.compound_entity_parent_to_children[parent_no], "This entity isn't a parent!")
-    local children = storage.compound_entity_parent_to_children[parent_no]
-    for _, child_no in pairs(children) do
+    local children_no = storage.compound_entity_parent_to_children[parent_no]
+    --assert(children_no, "This entity isn't a parent! " .. tostring(parent_no))
+    
+    for _, child_no in pairs(children_no or {}) do
         local child = game.get_entity_by_unit_number(child_no)
         if child and child.valid then child.destroy() end
         storage.compound_entity_child_to_parent[child_no] = nil
