@@ -33,6 +33,7 @@ local mupgrade_beacon =
     --damaged_trigger_effect = hit_effects.entity(),
     --drawing_box_vertical_extension = 0.7,
     allowed_effects = {"consumption", "speed", "pollution", "productivity"},
+    allowed_module_categories = {"mupgrade"}, --Only my unique modules go in
     supply_area_distance = 0,
     
     map_color = nil,

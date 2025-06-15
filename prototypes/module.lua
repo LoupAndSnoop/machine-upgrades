@@ -1,12 +1,18 @@
 --Defines fake modules for the mod to use, and a fake beacon to put them in
 
---#region modules
+--Make unique module category, so the beacon can be uniquely linked with it
+local module_category = "mupgrade"
+data:extend({
+  {type = "module-category", name = module_category, order = "z-mu"}
+})
+
+
 local icon_tint = {1,0.8,1}
 local modules = {
     {
       name = "mupgrade-module-prod",
       icons = {{icon="__base__/graphics/icons/productivity-module.png", tint=icon_tint}},
-      category = "productivity",
+      --category = "productivity",
       color_hint = { text = "P" },
       order = "zzzzzz[hidden]--mub[hidden-modules]-a",
       effect =  {productivity = 0.05},
@@ -20,7 +26,7 @@ local modules = {
       name = "mupgrade-module-speed",
       icons = {{icon="__base__/graphics/icons/speed-module.png", tint=icon_tint}},
       color_hint = { text = "S" },
-      category = "speed",
+      --category = "speed",
       order = "zzzzzz[hidden]--b[hidden-modules]-b",
       effect =  {speed=0.05},
       beacon_tint =
@@ -32,7 +38,7 @@ local modules = {
     {
       name = "mupgrade-module-efficiency",
       icons = {{icon="__base__/graphics/icons/efficiency-module.png", tint=icon_tint}},
-      category = "efficiency",
+      --category = "efficiency",
       color_hint = { text = "E" },
       order = "zzzzzz[hidden]--mub[hidden-modules]-c",
       effect =  {consumption = -0.05},
@@ -45,7 +51,7 @@ local modules = {
     {
       name = "mupgrade-module-pollution",
       icons = {{icon="__base__/graphics/icons/efficiency-module.png", tint=icon_tint}},
-      category = "efficiency",
+      --category = "efficiency",
       color_hint = { text = "E" },
       order = "zzzzzz[hidden]--mub[hidden-modules]-e",
       effect =  {pollution = -0.05},
@@ -62,7 +68,7 @@ if mods["quality"] then
       name = "mupgrade-module-quality",
       color_hint = { text = "Q" },
       icons = {{icon="__quality__/graphics/icons/quality-module.png", tint=icon_tint}},
-      category = "quality",
+      --category = "quality",
       order = "zzzzzz[hidden]--b[hidden-modules]-d",
       effect =  {quality = 0.1},
       beacon_tint =
@@ -77,6 +83,7 @@ end
 --Add common fields
 local module_common = {
   type = "module",
+  category = module_category,
   requires_beacon_alt_mode = false,
   hidden = true,
   hidden_in_factoriopedia = true,
@@ -106,92 +113,3 @@ end
 data:extend(modules)
 data:extend(negative_modules)
 
---#endregion
-
-
---[[
-data:extend({
-    {
-      type = "module",
-      name = "mupgrade-module-prod",
-      icons = {{icon="__base__/graphics/icons/productivity-module.png", tint=icon_tint}},
-      category = "productivity",
-      color_hint = { text = "P" },
-      tier = 1,
-      order = "zzzzzz[hidden]--b[hidden-modules]-a",
-      stack_size = 50,
-      weight = 999999 * kg,
-      effect =  {consumption = -1, speed=-0.02},
-      beacon_tint =
-      {
-        primary = {0, 1, 0},
-        secondary = {0.370, 1.000, 0.370, 1.000}, -- #5eff5eff
-      },
-      art_style = "vanilla",
-      requires_beacon_alt_mode = false,
-      hidden = true, hidden_in_factoriopedia = true,
-    },
-    {
-      type = "module",
-      name = "mupgrade-module-speed",
-      icons = {{icon="__base__/graphics/icons/productivity-module.png", tint=icon_tint}},
-      color_hint = { text = "S" },
-      category = "speed",
-      tier = 1,
-      order = "zzzzzz[hidden]--b[hidden-modules]-b",
-      stack_size = 50,
-      weight = 999999 * kg,
-      effect =  {speed=0.05},
-      beacon_tint =
-      {
-        primary = {0.441, 0.714, 1.000, 1.000}, -- #70b6ffff
-        secondary = {0.388, 0.976, 1.000, 1.000}, -- #63f8ffff
-      },
-      art_style = "vanilla",
-      requires_beacon_alt_mode = false,
-      hidden = true, hidden_in_factoriopedia = true,
-    },
-        {
-      type = "module",
-      name = "mupgrade-module-quality",
-      color_hint = { text = "Q" },
-      icons = {{icon="__base__/graphics/icons/productivity-module.png", tint=icon_tint}},
-      category = "quality",
-      tier = 1,
-      order = "zzzzzz[hidden]--b[hidden-modules]-d",
-      stack_size = 50,
-      weight = 999999 * kg,
-      effect =  {quality = 0.1},
-      beacon_tint =
-      {
-        primary = {0.441, 0.714, 1.000, 1.000}, -- #70b6ffff
-        secondary = {0.388, 0.976, 1.000, 1.000}, -- #63f8ffff
-      },
-      art_style = "vanilla",
-      requires_beacon_alt_mode = false,
-      hidden = true, hidden_in_factoriopedia = true,
-    },
-    {
-      type = "module",
-      name = "mupgrade-module-efficiency",
-      icons = {{icon="__base__/graphics/icons/efficiency-module.png", tint=icon_tint}},
-      category = "efficiency",
-      color_hint = { text = "E" },
-      tier = 1,
-      order = "zzzzzz[hidden]--b[hidden-modules]-c",
-      stack_size = 50,
-      weight = 999999 * kg,
-      effect =  {consumption = -0.05},
-      beacon_tint =
-      {
-        primary = {0, 1, 0},
-        secondary = {0.370, 1.000, 0.370, 1.000}, -- #5eff5eff
-      },
-      art_style = "vanilla",
-      requires_beacon_alt_mode = false,
-      hidden = true, hidden_in_factoriopedia = true,
-    },
-})
-
-
-]]

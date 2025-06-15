@@ -1,3 +1,5 @@
+--[[ --This version is before I started allowing multiple entity-names into one search
+
 --Make an interface to allow other mods to tell me: X machine should be getting X effect from whatever technology.
 
 local module_counter = require("__machine-upgrades__/script/module-counter")
@@ -77,41 +79,36 @@ end
 
 ---Remove a technology link between a specific entity and technology.
 ---@param technology_name string
----@param entity_name_input string | string[]
-local function remove_technology_effect(technology_name, entity_name_input)
+---@param entity_name string
+local function remove_technology_effect(technology_name, entity_name)
     local tech_effects = storage.linked_technologies[technology_name]
     --If technology has no linked effects, we're actually done.
     if not tech_effects then return end
 
-    local entity_name_array = (type(entity_name_input) == "table") and entity_name_input or {entity_name_input--[[@as string]]}
-    assert(table_size(entity_name_array) > 0, "Entity name array is empty!")
-
-    for _, entity_name in pairs(entity_name_array) do
-        --Remove a relevant effect.
-        for index, entry in pairs(tech_effects or {}) do
-            if entry.entity_name == entity_name then
-                table.remove(tech_effects, index)
-                break
-            end
+    --Remove a relevant effect.
+    for index, entry in pairs(tech_effects or {}) do
+        if entry.entity_name == entity_name then
+            table.remove(tech_effects, index)
+            break
         end
-        if tech_effects and table_size(tech_effects) == 0 then
-            storage.linked_technologies[technology_name] = nil
-        end
-
-        --Go remove the relevant tech for the entity
-        local entity_effects = storage.linked_entity_prototypes[entity_name]
-        for index, entry in pairs(tech_effects or {}) do
-            if entry.technology_name == technology_name then
-                table.remove(entity_effects, index)
-                break
-            end
-        end
-        if entity_effects and table_size(entity_effects) == 0 then
-            storage.linked_entity_prototypes[entity_name] = nil
-        end
-
-        update_entity(entity_name)
     end
+    if tech_effects and table_size(tech_effects) == 0 then
+        storage.linked_technologies[technology_name] = nil
+    end
+
+    --Go remove the relevant tech for the entity
+    local entity_effects = storage.linked_entity_prototypes[entity_name]
+    for index, entry in pairs(tech_effects or {}) do
+        if entry.technology_name == technology_name then
+            table.remove(entity_effects, index)
+            break
+        end
+    end
+    if entity_effects and table_size(entity_effects) == 0 then
+        storage.linked_entity_prototypes[entity_name] = nil
+    end
+
+    update_entity(entity_name)
 end
 
 
@@ -169,12 +166,9 @@ remote.add_interface("machine-upgrades-techlink",{
     ---@param auto_merge_handler boolean? If set true, then automatically merge handler with whatever was there previously. It is recommended to turn this on to merge with other mod.
     add_technology_effect = function(technology_name, entity_name, effect, entity_handler, auto_merge_handler)
         assert(prototypes.technology[technology_name],"Invalid technology name was passed: " .. technology_name)
-        local entity_name_array = (type(entity_name) == "table") and entity_name or {entity_name--[[@as string]]}
-        for _, each_entity_name in pairs(entity_name_array) do
-            assert(prototypes.entity[each_entity_name],"Invalid entity name was passed: " .. each_entity_name)
-            assert(prototypes.entity[each_entity_name].has_flag("get-by-unit-number"), "This entity needs the get-by-unit-number flag to function: " .. each_entity_name)
-            assert(entity_handler ~= each_entity_name, "Entity handler should not match the entity name, to protect vs migration. See: " .. entity_handler)
-        end
+        assert(prototypes.entity[entity_name],"Invalid entity name was passed: " .. entity_name)
+        assert(prototypes.entity[entity_name].has_flag("get-by-unit-number"), "This entity needs the get-by-unit-number flag to function: " .. entity_name)
+        assert(entity_handler ~= entity_name, "Entity handler should not match the entity name, to protect vs migration. See: " .. entity_handler)
 
         local modules = module_counter.effect_to_module_counts(effect)
         --If no modules, then we actually want to do a removal
@@ -191,21 +185,19 @@ remote.add_interface("machine-upgrades-techlink",{
         elseif not is_unique and previous_handler then entity_handler = previous_handler
         end
         
-        --Make each effect
-        for _, each_entity_name in pairs(entity_name_array) do
-            storage.entity_name_to_handler[each_entity_name] = entity_handler
-            local new_tech_effect = {
-                technology_name = technology_name,
-                entity_name = each_entity_name,
-                entity_handler = entity_handler,
-                effect = mupgrade_lib.deepcopy(effect),
-                modules = modules,
-            }
-            add_technology_effect(new_tech_effect)
-        end
-
+        storage.entity_name_to_handler[entity_name] = entity_handler
         entity_modifier.create_entity_cache(entity_handler, filter)
         entity_modifier.assign_modifier(entity_handler, "update-beacon")
+
+        local new_tech_effect = {
+            technology_name = technology_name,
+            entity_name = entity_name,
+            entity_handler = entity_handler,
+            effect = mupgrade_lib.deepcopy(effect),
+            modules = modules,
+        }
+
+        add_technology_effect(new_tech_effect)
         entity_modifier.apply_auto_modifier(entity_handler)
     end,
 
@@ -260,50 +252,4 @@ event_lib.on_event(defines.events.on_technology_effects_reset, "tech-link-tech-u
 event_lib.on_event(defines.events.on_research_finished, "tech-link-update", function(event)
   update_from_tech(event.research.name, event.research.force) end)
 
-
-
-
---[[
-    ---Add a specific effect to the given technology, to apply that module effect to the given entity.
-    ---@param technology_name string
-    ---@param entity_name string | string[]
-    ---@param effect ModuleEffects
-    ---@param entity_handler string Permanent string to reference that entity, so if the entity name changes/migrates, we don't have problems!
-    ---@param auto_merge_handler boolean? If set true, then automatically merge handler with whatever was there previously. It is recommended to turn this on to merge with other mod.
-    add_technology_effect = function(technology_name, entity_name, effect, entity_handler, auto_merge_handler)
-        assert(prototypes.technology[technology_name],"Invalid technology name was passed: " .. technology_name)
-        assert(prototypes.entity[entity_name],"Invalid entity name was passed: " .. entity_name)
-        assert(prototypes.entity[entity_name].has_flag("get-by-unit-number"), "This entity needs the get-by-unit-number flag to function: " .. entity_name)
-        assert(entity_handler ~= entity_name, "Entity handler should not match the entity name, to protect vs migration. See: " .. entity_handler)
-
-        local modules = module_counter.effect_to_module_counts(effect)
-        --If no modules, then we actually want to do a removal
-        if not modules or table_size(modules) == 0 then
-            remove_technology_effect(technology_name, entity_name)
-        end
-
-        local filter = {name=entity_name}
-        local is_unique, previous_handler = entity_modifier.is_unique_filter(filter)
-        if not auto_merge_handler then
-            assert(is_unique, "We have two entity handlers that are different, but search for the same entity. Please clear the old handler: " 
-                .. tostring(previous_handler) .."\nThis check is here as a safeguard to prevent duplicate calls from the same mod. Consider the optional merge argument.")
-        --Auto-merge
-        elseif not is_unique and previous_handler then entity_handler = previous_handler
-        end
-        
-        storage.entity_name_to_handler[entity_name] = entity_handler
-        entity_modifier.create_entity_cache(entity_handler, filter)
-        entity_modifier.assign_modifier(entity_handler, "update-beacon")
-
-        local new_tech_effect = {
-            technology_name = technology_name,
-            entity_name = entity_name,
-            entity_handler = entity_handler,
-            effect = mupgrade_lib.deepcopy(effect),
-            modules = modules,
-        }
-
-        add_technology_effect(new_tech_effect)
-        entity_modifier.apply_auto_modifier(entity_handler)
-    end,
 ]]
