@@ -14,6 +14,9 @@ local function initialize()
     ---Dictionary of included entity deregistration id => unit number
     ---@type table<uint, uint>
     storage.compound_entity_deregistry = storage.compound_entity_deregistry or {}
+    ---Dictionary of included entity unit_number => deregistration id
+    ---@type table<uint, uint>
+    storage.compound_entity_deregistry_rev = storage.compound_entity_deregistry_rev or {}
 
     ---Dictionary of included entity unit number => position where it was when linked
     ---@type table<uint, MapPosition>
@@ -44,8 +47,12 @@ function entity_linker.link_entities(parent, child)
     storage.compound_entity_positions[child.unit_number] = {child.position.x, child.position.y}
 
     --Make sure we know when it is dead.
-    storage.compound_entity_deregistry[script.register_on_object_destroyed(parent)] = parent.unit_number
-    storage.compound_entity_deregistry[script.register_on_object_destroyed(child)] = child.unit_number
+    local parent_deregister = script.register_on_object_destroyed(parent)
+    local child_deregister = script.register_on_object_destroyed(child)
+    storage.compound_entity_deregistry[parent_deregister] = parent.unit_number
+    storage.compound_entity_deregistry[child_deregister] = child.unit_number
+    storage.compound_entity_deregistry_rev[parent.unit_number] = parent_deregister
+    storage.compound_entity_deregistry_rev[child.unit_number] = child_deregister
 end
 
 
@@ -76,6 +83,7 @@ local function on_entity_destroyed(entity_deregister_id, spare_parent)
 
     --Now clear the working storage
     storage.compound_entity_deregistry[entity_deregister_id] = nil
+    storage.compound_entity_deregistry_rev[entity_no] = nil
 end
 
 
@@ -88,8 +96,8 @@ function entity_linker.kill_children_of(entity_no)
     local children_no = storage.compound_entity_parent_to_children[parent_no]
     if not children_no then return end --This entity number isn't something we are tracking
 
-    local parent = game.get_entity_by_unit_number(parent_no)
-    local entity_deregister_id = script.register_on_object_destroyed(parent)
+    --local entity_deregister_id = script.register_on_object_destroyed(game.get_entity_by_unit_number(parent_no))
+    local entity_deregister_id = storage.compound_entity_deregistry_rev[parent_no]
     on_entity_destroyed(entity_deregister_id, true) --On-destruction function should take care of chain destruction
 end
 
