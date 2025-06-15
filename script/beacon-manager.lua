@@ -78,7 +78,6 @@ local function update_all_entity_moduling(entity_handler, force_set)
     --Make a lookup table for each entity, and force
     local module_lookup = {}
     for force in pairs(force_set or {}) do
-        log(serpent.block(force))
         module_lookup[force.index] = {}
         for _, entity_name in pairs(entity_name_all) do
             local modules_to_add, total_count = module_counter.get_total_moduling(entity_name, force)
@@ -145,23 +144,3 @@ event_lib.on_configuration_changed("beacon-manager-initialize", initialize)
 event_lib.on_nth_tick(1, "beacon-manager-regular_update", beacon_manager.regular_update)
 
 return beacon_manager
-
-
-
----Beacon-removal
---[[@param entity_name string name of entity from which to remove beacons.
-function beacon_manager.remove_beacons_from_all(entity_name)
-    if not entity.valid then return end
-    
-    local beacon_array = storage.compound_entity_parent_to_children[entity]    
-entity_linker.kill_children_of(entity_no)
-
-end
----Beacon-removal
----@param entity LuaEntity name of entity from which to remove beacons.
-local function remove_beacon_from(entity)
-    if not entity or not entity.valid then return end
-    local beacon_array = storage.compound_entity_parent_to_children[entity]    
-
-
-end]]

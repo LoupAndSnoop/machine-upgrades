@@ -52,7 +52,7 @@ end
 ---When an object is destroyed, if we are keeping tabs on it, update all the data/caches.
 ---If it was in a compound entity, make sure all parts of the entity die together.
 ---@param entity_deregister_id uint Entity registration id for on_object_destroyed
----@param spare_parent boolean if set true, do NOT destroy the parent in this call. Default false
+---@param spare_parent boolean? if set true, do NOT destroy the parent in this call. Default false
 local function on_entity_destroyed(entity_deregister_id, spare_parent)
     if not storage.compound_entity_deregistry[entity_deregister_id] then return end
 

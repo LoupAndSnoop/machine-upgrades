@@ -246,28 +246,38 @@ remote.add_interface("machine-upgrades-techlink",{
 
 ---Update everything from that tech, optionally limited to just that force.
 ---@param technology_name string
----@param force LuaForce?
+---@param force LuaForce? No force means every force
 local function update_from_tech(technology_name, force)
+    assert(prototypes.technology[technology_name], "Invalid technology name: " .. technology_name)
     local effects = storage.linked_technologies[technology_name]
     for _, entry in pairs(effects or {}) do
         update_entity(entry.entity_name, force)
     end
 end
+---Update ALL entities via ALL techs.
+local function update_all_entities()
+    for key in pairs(storage.linked_technologies) do 
+        update_from_tech(key) end
+end
 
 --#endregion
 
-
+----Event Registration
 local event_lib = require("__machine-upgrades__.script.event-lib")
 event_lib.on_init("tech-link-initialize", initialize_storage)
 event_lib.on_configuration_changed("tech-link-initialize", initialize_storage)
 event_lib.on_configuration_changed("tech-link-clear", clear_all_effects)
 
-event_lib.on_event(defines.events.on_technology_effects_reset, "tech-link-tech-update-all",
-    function(event)
-        for key in storage.linked_technologies do
-            update_from_tech(key)
-        end
+--This needs to delay by a tick, so other scripts can tell us what they need
+event_lib.on_configuration_changed("tech-link-update-all", function()
+    event_lib.on_nth_tick(1, "tech-link-force-update", function()
+        update_all_entities()
+        event_lib.on_nth_tick(1, "tech-link-force-update", nil)
     end)
+end)
+
+event_lib.on_event(defines.events.on_technology_effects_reset,
+    "tech-link-update-all", update_all_entities)
 
 event_lib.on_event(defines.events.on_research_finished, "tech-link-update", function(event)
   update_from_tech(event.research.name, event.research.force) end)

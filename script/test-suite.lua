@@ -29,12 +29,12 @@ end
 --#region Example 2: Multiple entities at once (which is substantially more UPS-efficient!)
 -- What to do in Data stage
 if data and data.raw and data.raw.module and table_size(data.raw.module) > 0 then
-    table.insert(data.raw.technology["automation-science-pack"].effects,
+    table.insert(data.raw.technology["logistic-science-pack"].effects,
         mupgrade_lib.make_modifier({icon="__base__/graphics/icons/chemical-plant.png"}, "productivity",
         "My unlocalized multiple entity text", 10))
-    table.insert(data.raw.technology["automation-science-pack"].effects,
+    table.insert(data.raw.technology["logistic-science-pack"].effects,
         mupgrade_lib.make_modifier({icon="__base__/graphics/icons/chemical-plant.png"}, "efficiency",
-        {"entity-name.chemical-plant"}, -20))
+        {"entity-name.chemical-plant"}, -30))
     mupgrade_lib.add_id_flag(data.raw["assembling-machine"]["chemical-plant"])
     mupgrade_lib.add_id_flag(data.raw["mining-drill"]["electric-mining-drill"])
 
@@ -42,8 +42,8 @@ if data and data.raw and data.raw.module and table_size(data.raw.module) > 0 the
 elseif script then
     local function register2()
         remote.call("machine-upgrades-techlink", "add_technology_effect", 
-                "automation-science-pack", {"chemical-plant", "electric-mining-drill"},
-                {productivity=0.1, consumption= -0.2}, "I think I'll call this chemical plant and drill")
+                "logistic-science-pack", {"chemical-plant", "electric-mining-drill"},
+                {productivity=0.1, consumption= -0.3}, "I think I'll call this chemical plant and drill")
     end
 
     --Use whatever event handling you want, but that remote interface needs to get called on_init and on_configuration_changed!
@@ -52,6 +52,31 @@ elseif script then
     event_lib.on_configuration_changed("test-suite-2", register2)
 end
 --#endregion
+
+
+
+--#region Example 3: An infinite technology
+-- What to do in Data stage
+if data and data.raw and data.raw.module and table_size(data.raw.module) > 0 then
+    table.insert(data.raw.technology["physical-projectile-damage-7"].effects,
+        mupgrade_lib.make_modifier({icon="__base__/graphics/icons/assembling-machine-3.png"},
+            "pollution", {"entity-name.assembling-machine-3"}, 15))
+    mupgrade_lib.add_id_flag(data.raw["assembling-machine"]["assembling-machine-3"])
+
+--What to do in Control stage
+elseif script then
+    local function register3()
+        remote.call("machine-upgrades-techlink", "add_technology_effect", 
+                "physical-projectile-damage-7", "assembling-machine-3", {pollution=0.15}, "Assembler3")
+    end
+
+    --Use whatever event handling you want, but that remote interface needs to get called on_init and on_configuration_changed!
+    local event_lib = require("__machine-upgrades__.script.event-lib")
+    event_lib.on_init("test-suite-3", register3)
+    event_lib.on_configuration_changed("test-suite-3", register3)
+end
+--#endregion
+
 
 --[[
 --#region Helpful console commands:
@@ -65,7 +90,7 @@ end
 /c __machine-upgrades__ mupgrade_lib.print_technology_links()
 
 --Show all event registrations
---/c __machine-upgrades__ mupgrade.print_events()
+/c __machine-upgrades__ mupgrade.print_events()
 
 --#endregion
 ]]

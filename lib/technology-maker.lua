@@ -44,7 +44,7 @@ function mupgrade_lib.make_modifier(base_icon, modifier_name, machine_name, stat
     --Make the description
     local sign = (stated_effect_strength > 0) and "+" or "-"
     local full_description = {"", machine_name or "modifier-description.mupgrade-default-effect-description",
-        ": ", modifier_data.name, " " .. sign .. tostring(stated_effect_strength) .. "%"}
+        ": ", modifier_data.name, " " .. sign .. tostring(math.abs(stated_effect_strength)) .. "%"}
 
     --Make the actual effect
     local effect = {
