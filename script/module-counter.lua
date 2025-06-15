@@ -67,6 +67,13 @@ end
 ---@param technology LuaTechnology
 ---@return int research_count
 local function technology_counter(technology)
+    if technology.researched then
+        return technology.level - technology.prototype.level + 1
+    else return technology.level - technology.prototype.level
+    end
+end
+
+    --[[
     if not technology.upgrade then
         if technology.researched then return technology.level
         else return technology.level - 1 end --Not researched, and not an upgrade
@@ -78,8 +85,7 @@ local function technology_counter(technology)
 
         if technology.researched then return technology.level - under_level
         else return technology.level - under_level - 1 end
-    end
-end
+    end]]
 
 ---Get a table that includes the total moduling for the given beacon.
 ---@param entity_name string

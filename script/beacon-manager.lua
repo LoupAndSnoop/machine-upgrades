@@ -1,7 +1,7 @@
 --This file is where we do the actual beaconating
 local entity_linker = require("__machine-upgrades__/script/compound-entity-link")
 local module_counter = require("__machine-upgrades__/script/module-counter")
-
+local entity_modifier = require("__machine-upgrades__/script/entity-modifier")
 
 local beacon_manager = {}
 
@@ -85,6 +85,14 @@ local function update_all_entity_moduling(entity_handler, force_set)
     end
 end
 
+---When this entity gets an on-build, if it needs beacon+moduling, do it.
+---@param entity LuaEntity
+local function update_beacon_on_build(entity)
+    if not entity.valid then return end
+    local modules_to_add, total_count = module_counter.get_total_moduling(entity.name, entity.force)
+    update_entity_moduling(entity, modules_to_add)
+end
+entity_modifier.register_function("update-beacon", update_beacon_on_build)
 
 ---Set this entity-handler to be updated at next convenience
 ---@param entity_handler string String handler for that specific type of entity

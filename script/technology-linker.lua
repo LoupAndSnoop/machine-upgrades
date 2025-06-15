@@ -34,7 +34,6 @@ local function update_entity(entity_name, force)
     local entity_handler = storage.entity_name_to_handler[entity_name]
 
     beacon_manager.request_entity_update(entity_handler, force)
-    --TODO
 end
 
 
@@ -193,6 +192,7 @@ remote.add_interface("machine-upgrades-techlink",{
 
         storage.entity_name_to_handler[entity_name] = entity_handler
         entity_modifier.create_entity_cache(entity_handler, filter)
+        entity_modifier.assign_modifier(entity_handler, "update-beacon")
 
         add_technology_effect(new_tech_effect)
     end,

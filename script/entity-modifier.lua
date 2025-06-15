@@ -136,6 +136,24 @@ entity_modifier.remove_entity_cache = function(entity_handler)
     storage.modified_entity_registry[entity_handler] = nil
 end
 
+------Helpers
+--If the input array contains the given value, return the index of that value (=true!)
+--Otherwise, output false
+local function array_find(array, value)
+  for index, val in pairs(array) do
+    if val == value then return index end
+  end
+  return false
+end
+--If the input array contains a value such that check(value) = true, 
+--then return its index (=true!) Otherwise, output false
+local function array_find_condition(array, condition)
+  for index, val in pairs(array) do
+    if condition(val) then return index end
+  end
+  return false
+end
+
 
 ---Return true if the LuaEntity satisfies the given EntitySearchFilters.
 ---Don't check every possible part of the filter--just key parts.
@@ -145,10 +163,12 @@ local function entity_satisfies_filter(entity, filter)
     if not entity.valid then return false end
 
     --Reject by entity type. (most common case)
-    if filter.name and (entity.name ~= (filter.name.name or filter.name)) 
-        and not rubia_lib.array_find_condition(filter.name, function(entityID)
-            return entity.name == (entityID.name or entityID) end) then
-        return false
+    if filter.name then
+        if type(filter.name) ~= table then
+            if (entity.name ~= (filter.name.name or filter.name)) then return false end --Checks case of filter = string or LuaEntity/Prototype
+        elseif not array_find_condition(filter.name, function(entityID) --Case of array of ID
+                return entity.name == (entityID.name or entityID) end) then return false
+        end
     end
     --[[if filter.name and (entity.name ~= (filter.name.name or filter.name)) then
         --Need to check by array
@@ -175,16 +195,16 @@ local function entity_satisfies_filter(entity, filter)
     --[[Reject by wrong prototype, as true name
     local prototype = (entity.type ~= "entity-ghost") and entity.type or entity.ghost_type
     if filter.type and (prototype ~= filter.type)
-        and not rubia_lib.array_find(filter.type, prototype) then
+        and not array_find(filter.type, prototype) then
         return false
     end]]
     --Prototype rejection. Filters has separation for ghost types
     if filter.type and (entity.type ~= filter.type)
-        and not rubia_lib.array_find(filter.type, entity.type) then
+        and not array_find(filter.type, entity.type) then
         return false
     end
     if filter.ghost_type and (entity.ghost_type ~= filter.ghost_type)
-        and not rubia_lib.array_find(filter.ghost_type, entity.ghost_type) then
+        and not array_find(filter.ghost_type, entity.ghost_type) then
         return false
     end
 
@@ -217,7 +237,7 @@ local function update_on_build(entity)
                 local to_invoke = function_register[entry.auto_modifier]
                 assert(to_invoke, "We need to invoke an auto-modifier for an entity being added to the registry, "
                 .. "but its function isn't registered yet! Current auto-register key = " .. tostring(entry.auto_modifier))
-                to_invoke(entry)
+                to_invoke(entity)
             end
         end
     end
@@ -282,6 +302,7 @@ end
 --Event subscriptions
 local event_lib = require("__machine-upgrades__.script.event-lib")
 event_lib.on_init("entity-cache-initialize", initialize)
+event_lib.on_configuration_changed("entity-cache-initialize", initialize)
 event_lib.on_built("entity-cache-update", update_on_build)
 event_lib.on_event(defines.events.on_object_destroyed, "entity-cache-update",
     function(event) update_on_object_destroyed(event.registration_number) end)

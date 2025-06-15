@@ -44,7 +44,7 @@ function entity_linker.link_entities(parent, child)
     storage.compound_entity_positions[child] = {child.position.x, child.position.y}
 
     --Make sure we know when it is dead.
-    storage.compound_entity_deregister[script.register_on_object_destroyed(parent)] = parent
+    storage.compound_entity_deregistry[script.register_on_object_destroyed(parent)] = parent
     storage.compound_entity_deregistry[script.register_on_object_destroyed(child)] = child
 end
 
@@ -82,14 +82,19 @@ local entity_mid_move_lock = false
 ---@param entity LuaEntity
 local function on_entity_moved(entity)
     if not entity.valid then return end
+    game.print("DING")
     if entity_mid_move_lock then return end --We are in the middle of something! Don't recurse on me, you twat.
 
+    game.print("DING-1.5 " .. entity.name)
     local old_pos = storage.compound_entity_positions[entity]
     if not old_pos then return end --We are not even logging this entity!
 
+    game.print("DING-1.7")
     local parent = storage.compound_entity_child_to_parent[entity] or entity
     local children = storage.compound_entity_parent_to_children[parent]
     if not children then return end --This entity is just not relevant to us.
+
+    game.print("DING-2")
 
     local current_pos = {x = entity.position.x, y = entity.position.y}
     local displacement = {x = current_pos.x - old_pos.x, y = current_pos.y - old_pos.y}
@@ -97,6 +102,8 @@ local function on_entity_moved(entity)
     ---@param displace_entity LuaEntity
     local function displace(displace_entity)
         if not displace_entity.valid or entity == displace_entity then return end
+        game.print("DING-3" .. displace_entity.name)
+
         local current_position = displace_entity.position
         displace_entity.teleport({current_position.x + displacement.x, current_position.y + displacement.y},
             entity.surface, true)
