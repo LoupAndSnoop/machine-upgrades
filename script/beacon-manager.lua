@@ -29,10 +29,14 @@ local function try_get_beacon(entity)
     local beacon_array = storage.compound_entity_parent_to_children[entity]
     if beacon_array then return beacon_array[1] end --Already exists
     
+    --Get accurate position as the center of the collision box.
+    local left_top, right_bottom = entity.bounding_box.left_top, entity.bounding_box.right_bottom
+    local center = {x = (left_top.x + right_bottom.x)/2, y = (left_top.y + right_bottom.y)/2}
+
     --Does not already exist. Make one, and link it!
     local new_beacon = entity.surface.create_entity{
         name = "mupgrade-beacon",
-        position = entity.position,
+        position = center,--entity.position,
         force = entity.force_index,
         raise_built = true,
     }
@@ -69,19 +73,30 @@ local MAX_MODULE_COUNT = prototypes.entity["mupgrade-beacon"].module_inventory_s
 local function update_all_entity_moduling(entity_handler, force_set)
     local cached_entity_entry = storage.modified_entity_registry[entity_handler]
     if not cached_entity_entry then return end
-    local entity_name = cached_entity_entry.entity_filter.name
-    assert(entity_name, "No entity name in entity search filter with the handle: " .. entity_handler)
+    local entity_name_all = cached_entity_entry.entity_filter.name
+    assert(entity_name_all, "No entity name in entity search filter with the handle: " .. entity_handler)
+    ---@type string[]
+    entity_name_all = (type(entity_name_all) == "table") and entity_name_all or {entity_name_all} --Standardize to string[]
 
     local cached_entities = cached_entity_entry.entity_hashset
     if not cached_entities or table_size(cached_entities) == 0 then return end --Nothing to update
 
+    --Make a lookup table for each entity, and force
+    local module_lookup = {}
     for force in pairs(force_set or {}) do
-        local modules_to_add, total_count = module_counter.get_total_moduling(entity_name, force)
-        assert(total_count <= MAX_MODULE_COUNT, "Beacon module count exceeded. Please tell mod creator.")
-        
-        for entity in pairs(cached_entities) do
-            update_entity_moduling(entity, modules_to_add)
+        log(serpent.block(force))
+        module_lookup[force.index] = {}
+        for _, entity_name in pairs(entity_name_all) do
+            local modules_to_add, total_count = module_counter.get_total_moduling(entity_name, force)
+            assert(total_count <= MAX_MODULE_COUNT, "Beacon module count exceeded. Please tell mod creator.")
+            module_lookup[force.index][entity_name] = modules_to_add
         end
+    end
+
+    --Now go update them
+    for entity_no in pairs(cached_entities) do
+        local entity = game.get_entity_by_unit_number(entity_no)
+        update_entity_moduling(entity, module_lookup[entity.force_index][entity.name])
     end
 end
 
@@ -89,7 +104,8 @@ end
 ---@param entity LuaEntity
 local function update_beacon_on_build(entity)
     if not entity.valid then return end
-    local modules_to_add, total_count = module_counter.get_total_moduling(entity.name, entity.force)
+    local modules_to_add, total_count = module_counter.get_total_moduling(entity.name, game.forces[entity.force_index])
+    assert(total_count <= MAX_MODULE_COUNT, "Beacon module count exceeded. Please tell mod creator.")
     update_entity_moduling(entity, modules_to_add)
 end
 entity_modifier.register_function("update-beacon", update_beacon_on_build)
@@ -99,15 +115,14 @@ entity_modifier.register_function("update-beacon", update_beacon_on_build)
 ---@param force LuaForce? optionally limit to just this lua force
 function beacon_manager.request_entity_update(entity_handler, force)
     --All forces, if not specified
-    if not force then storage.entities_needing_update[entity_handler] = game.forces
+    if not force then storage.entities_needing_update[entity_handler] = 
+        mupgrade_lib.dictionary_values_to_hashset(game.forces)
     else
         local existing_forces = storage.entities_needing_update[entity_handler]
         if existing_forces then existing_forces[force] = true
         else storage.entities_needing_update[entity_handler] = {[force] = true}
         end
     end
-
-    
 end
 ---Update all entities that are currently in need of updating, all at once. This prevents duplicate calls.
 local function regular_update()

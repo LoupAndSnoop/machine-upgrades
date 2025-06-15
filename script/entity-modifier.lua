@@ -54,12 +54,13 @@ end
 ---If the argument is nil, then do it for ALL things in the registry.
 ---@param entity_handler string string that represents the ID associated with that entity category.
 entity_modifier.apply_auto_modifier = function(entity_handler)
-    --Apply the modifier for one specific entry of the registry
+    ---Apply the modifier for one specific entry of the registry
+    ---@param entry MURegistryEntry
     local function try_apply_modifier(entry)
         if not entry.auto_modifier then return end
         to_call = function_register[entry.auto_modifier]
         assert(to_call, "There was no registered function found under the modifier ID: " .. entry.auto_modifier)
-        for _, entity_no in pairs(entry.entity_hashset) do
+        for entity_no, _ in pairs(entry.entity_hashset) do
             local entity = game.get_entity_by_unit_number(entity_no)
             if not entity or entity.valid then to_call(entity) end
         end

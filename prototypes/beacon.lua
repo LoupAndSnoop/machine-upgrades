@@ -74,14 +74,14 @@ if mupgrade_lib.DEBUG_MODE then
         selection_priority = 100,
         selectable_in_game = true,
     }
-    beacon_debug_properties.graphics_set.base_layer = "higher-object-above"
-    beacon_debug_properties.graphics_set.top_layer = "higher-object-above"
-    beacon_debug_properties.graphics_set.animation_layer = "higher-object-above"
+    beacon_debug_properties.graphics_set.base_layer = "air-object"--"higher-object-above"
+    beacon_debug_properties.graphics_set.top_layer = "air-object"--"higher-object-above"
+    beacon_debug_properties.graphics_set.animation_layer = "air-object"--"higher-object-above"
     local animation_list = beacon_debug_properties.graphics_set.animation_list
     for _, entry in pairs(animation_list) do
         entry.animation.scale = 0.2--animation.scale and (animation.scale / 2) or 0.1
         for _, layer in pairs(entry.animation.layers or {}) do
-            layer.scale = 0.2--layer.scale and (layer.scale / 2) or 0.1
+            layer.scale = 0.2
         end
     end
 

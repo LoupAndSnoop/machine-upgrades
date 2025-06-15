@@ -2,7 +2,8 @@ assert(mupgrade_lib, "mupgrade_lib not defined!")
 assert(mupgrade_lib.get_current_stage() == "data", "This library is for data stage only.")
 
 
---Make sure the target prototype can be gotten by unit number
+---Make sure the target prototype can be gotten by unit number
+---@param prototype data.EntityPrototype
 function mupgrade_lib.add_id_flag(prototype)
     local unit_flag = "get-by-unit-number"
     if not prototype.flags or table_size(prototype.flags) == 0 then prototype.flags = {unit_flag}

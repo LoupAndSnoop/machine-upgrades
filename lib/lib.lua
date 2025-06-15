@@ -16,3 +16,13 @@ end
 if mupgrade_lib.get_current_stage() == "data" then require("__machine-upgrades__/lib/data-lib")
 elseif mupgrade_lib.get_current_stage() == "control" then require("__machine-upgrades__/lib/control-lib")
 end
+
+
+---Dictionary go in. Make a new hashset of all the different values in it
+---@param dictionary table<any, any>
+---@return table<any, boolean> hashset
+function mupgrade_lib.dictionary_values_to_hashset(dictionary)
+  local hashset = {}
+  for _, value in pairs(dictionary) do hashset[value] = true end
+  return hashset
+end

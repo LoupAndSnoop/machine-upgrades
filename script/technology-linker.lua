@@ -185,8 +185,9 @@ remote.add_interface("machine-upgrades-techlink",{
         local filter = {name=entity_name}
         local is_unique, previous_handler = entity_modifier.is_unique_filter(filter)
         if not auto_merge_handler then
-            assert(is_unique, "We have two entity handlers that are different, but search for the same entity. Please clear the old handler: " 
-                .. tostring(previous_handler) .."\nThis check is here as a safeguard to prevent duplicate calls from the same mod. Consider the optional merge argument.")
+            assert(is_unique or (previous_handler == entity_handler), "We have two entity handlers that are different, but search for the same entity. Please clear the old handler: " 
+                .. tostring(previous_handler) .. ", new handler was: " .. tostring(entity_handler) 
+                .."\nThis check is here as a safeguard to prevent duplicate calls from the same mod. Consider the optional merge argument if you need to override.")
         --Auto-merge
         elseif not is_unique and previous_handler then entity_handler = previous_handler
         end
