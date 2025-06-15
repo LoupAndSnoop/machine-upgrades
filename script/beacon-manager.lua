@@ -5,12 +5,17 @@ local module_counter = require("__machine-upgrades__/script/module-counter")
 
 local beacon_manager = {}
 
---[[
 local function initialize()
+    --[[
     ---Dictionary of parent entity => its beacon
     ---@type table<LuaEntity, LuaEntity> 
-    storage.beacon_correlator = storage.beacon_correlator or {}
-end]]
+    --storage.beacon_correlator = storage.beacon_correlator or {}
+    ]]
+
+    ---Hashset of entity names, for entities still needing an update
+    ---@type table<string, boolean>
+    storage.entities_needing_update = storage.entities_needing_update or {}
+end
 
 --In this mod, all the entities in the compound-entity link have an entity-beacon relationship. We'll use that.
 
@@ -60,7 +65,7 @@ local MAX_MODULE_COUNT = prototypes.entity("mupgrade-beacon").module_inventory_s
 
 ---Go update all the entity handling for all entities tied to this handler.
 ---@param entity_handler string Handler for the relevant entity. This should NOT be automatically the same as the entity_name, so migration doesn't fuck everything up.
-function beacon_manager.update_all_entity_moduling(entity_handler)
+local function update_all_entity_moduling(entity_handler)
     local cached_entity_entry = storage.modified_entity_registry[entity_handler]
     if not cached_entity_entry then return end
     local entity_name = cached_entity_entry.entity_filter.name
@@ -78,9 +83,24 @@ function beacon_manager.update_all_entity_moduling(entity_handler)
 end
 
 
+---Set this entity-handler to be updated at next convenience
+---@param entity_handler string String handler for that specific type of entity
+function beacon_manager.request_entity_update(entity_handler)
+    storage.entities_needing_update[entity_handler] = true
+end
+---Update all entities that are currently in need of updating, all at once. This prevents duplicate calls.
+local function regular_update()
+    for entity_handler in pairs(storage.entities_needing_update or {}) do
+        update_all_entity_moduling(entity_handler)
+    end
+    storage.entities_needing_update = {}
+end
+
+
 --Events
 local event_lib = require("__machine-upgrades__.script.event-lib")
---event_lib.on_init("beacon-manager-initialize", initialize)
---event_lib.on_configuration_changed("beacon-manager-initialize", initialize)
+event_lib.on_init("beacon-manager-initialize", initialize)
+event_lib.on_configuration_changed("beacon-manager-initialize", initialize)
+event_lib.on_nth_tick(1, "beacon-manager-regular_update", regular_update)
 
 return beacon_manager

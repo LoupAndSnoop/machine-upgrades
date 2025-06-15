@@ -5,4 +5,7 @@ This mod allows you to make technologies upgrade a machine like with the effect 
 
 The most important functions in this mod are:
     - mupgrade_lib.make_modifier : Use this in data stage to create the desired effect in a technology.
-    - remote.call("machine-upgrades-techlink", "add_technology_effect", technology_name, entity_name, effect): Use this in control stage in an event callback to tie a specific entity prototype and effect to the technology's research progress.
+    - remote.call("machine-upgrades-techlink", "add_technology_effect", technology_name, entity_name, effect, entity_handler): Use this in control stage in an event callback to tie a specific entity prototype and effect to the technology's research progress.
+Look at test-suite.lua to see some actual working usage.
+
+Note that entity_handler should be matched to the same entity_name to save on UPS.

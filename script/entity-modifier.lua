@@ -78,6 +78,28 @@ end
 --#endregion
 
 --#region Standard make/maintain cache
+
+---Return TRUE if the entity search filter is unique. False if it is not.
+---@param filter EntitySearchFilters
+---@return boolean result
+---@return string? pre_existing_handler
+function entity_modifier.is_unique_filter(filter)
+    for handler, entry in pairs(storage.modified_entity_registry) do
+        for key, value in pairs(entry.entity_filter) do
+            if filter[key] ~= value then goto continue end 
+        end
+        for key, value in pairs(filter) do
+            if entry.entity_filter[key] ~= value then goto continue end 
+        end
+        if table_size(filter) ~= table_size(entry.entity_filter) then goto continue end
+        --If we didn't skip, then we have a duplicate
+        if true then return false, handler end
+        ::continue::
+    end
+
+    return true, nil
+end
+
 ---Find ALL entities across ALL surfaces that satisfy a specific filter.
 ---This function can be used to either create a new cache from scratch OR
 ---for hard refreshing a given cache.
@@ -108,8 +130,9 @@ end
 
 
 ---Destroy this entity cache, and stop logging it
----@param entity_handler string string that represents the ID associated with that entity category.
+---@param entity_handler string? string that represents the ID associated with that entity category.
 entity_modifier.remove_entity_cache = function(entity_handler)
+    if not entity_handler then return end
     storage.modified_entity_registry[entity_handler] = nil
 end
 
