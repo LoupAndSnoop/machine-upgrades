@@ -3,21 +3,21 @@ local entity_linker = {}
 
 
 local function initialize()
-    ---Dictionary of parent entity => array of child entities.
-    ---@type table<LuaEntity, LuaEntity[]>> 
+    ---Dictionary of parent entity unitID => array of child entity unit numbers
+    ---@type table<uint, uint[]>> 
     storage.compound_entity_parent_to_children = storage.compound_entity_parent_to_children or {}
 
-    ---Dictionary of child entity => its parent entity
-    ---@type table<LuaEntity, LuaEntity>
+    ---Dictionary of child entity unit_id => its parent entity unit number
+    ---@type table<uint, uint>
     storage.compound_entity_child_to_parent = storage.compound_entity_child_to_parent or {}
 
-    ---Dictionary of included entity => deregistration id
-    ---@type table<uint, LuaEntity>
+    ---Dictionary of included entity deregistration id => unit number
+    ---@type table<uint, uint>
     storage.compound_entity_deregistry = storage.compound_entity_deregistry or {}
 
-    ---Dictionary of included entity => position where it was when linked
-    ---@type table<LuaEntity, MapPosition>
-    storage.compound_entity_positions = storage.compound_entity_positions or {}
+    ---Dictionary of included entity unit number => position where it was when linked
+    ---@type table<uint, MapPosition>
+    storage.compound_entity_positions = storage.compound_entity_positions or {}--{["a"]=true}
 end
 
 ---Link a child entity to a parent entity to be listed as a composite.
@@ -26,26 +26,26 @@ end
 function entity_linker.link_entities(parent, child)
     if not parent.valid or not child.valid then return end
 
-    local children = storage.compound_entity_parent_to_children[parent]
+    local children = storage.compound_entity_parent_to_children[parent.unit_number]
     if not children then
-        storage.compound_entity_parent_to_children[parent] = {child}
+        storage.compound_entity_parent_to_children[parent.unit_number] = {child.unit_number}
     else 
         --Check case where they are already linked => nothing to do
         for _, entry in pairs(children) do
             if entry == child then return end
         end
-        table.insert(storage.compound_entity_parent_to_children[parent], child)
+        table.insert(storage.compound_entity_parent_to_children[parent.unit_number], child.unit_number)
     end
 
-    storage.compound_entity_child_to_parent[child] = parent
+    storage.compound_entity_child_to_parent[child.unit_number] = parent.unit_number
 
     --Log positions
-    storage.compound_entity_positions[parent] = {parent.position.x, parent.position.y}
-    storage.compound_entity_positions[child] = {child.position.x, child.position.y}
+    storage.compound_entity_positions[parent.unit_number] = {parent.position.x, parent.position.y}
+    storage.compound_entity_positions[child.unit_number] = {child.position.x, child.position.y}
 
     --Make sure we know when it is dead.
-    storage.compound_entity_deregistry[script.register_on_object_destroyed(parent)] = parent
-    storage.compound_entity_deregistry[script.register_on_object_destroyed(child)] = child
+    storage.compound_entity_deregistry[script.register_on_object_destroyed(parent)] = parent.unit_number
+    storage.compound_entity_deregistry[script.register_on_object_destroyed(child)] = child.unit_number
 end
 
 
@@ -55,21 +55,23 @@ end
 local function on_entity_destroyed(entity_deregister_id)
     if not storage.compound_entity_deregistry[entity_deregister_id] then return end
 
-    local entity = storage.compound_entity_deregistry[entity_deregister_id]
+    local entity_no = storage.compound_entity_deregistry[entity_deregister_id]
 
     --Find the parent of this relationship.
-    local parent = storage.compound_entity_child_to_parent[entity] or entity
-    assert(storage.compound_entity_parent_to_children[parent], "This entity isn't a parent!")
-    local children = storage.compound_entity_parent_to_children[parent]
-    for _, child in pairs(children) do
-        if child.valid then child.destroy() end
-        storage.compound_entity_child_to_parent[child] = nil
-        storage.compound_entity_positions[child] = nil
+    local parent_no = storage.compound_entity_child_to_parent[entity_no] or entity_no
+    assert(storage.compound_entity_parent_to_children[parent_no], "This entity isn't a parent!")
+    local children = storage.compound_entity_parent_to_children[parent_no]
+    for _, child_no in pairs(children) do
+        local child = game.get_entity_by_unit_number(child_no)
+        if child and child.valid then child.destroy() end
+        storage.compound_entity_child_to_parent[child_no] = nil
+        storage.compound_entity_positions[child_no] = nil
     end
 
-    if parent.valid then parent.destroy() end
-    storage.compound_entity_positions[parent] = nil
-    storage.compound_entity_parent_to_children[parent] = nil
+    local parent = game.get_entity_by_unit_number(parent_no)
+    if parent and parent.valid then parent.destroy() end
+    storage.compound_entity_positions[parent_no] = nil
+    storage.compound_entity_parent_to_children[parent_no] = nil
 
     --Now clear the working storage
     storage.compound_entity_deregistry[entity_deregister_id] = nil
@@ -82,39 +84,35 @@ local entity_mid_move_lock = false
 ---@param entity LuaEntity
 local function on_entity_moved(entity)
     if not entity.valid then return end
-    game.print("DING")
     if entity_mid_move_lock then return end --We are in the middle of something! Don't recurse on me, you twat.
 
-    game.print("DING-1.5 " .. entity.name)
-    local old_pos = storage.compound_entity_positions[entity]
+    local old_pos = storage.compound_entity_positions[entity.unit_number]
     if not old_pos then return end --We are not even logging this entity!
 
-    game.print("DING-1.7")
-    local parent = storage.compound_entity_child_to_parent[entity] or entity
-    local children = storage.compound_entity_parent_to_children[parent]
-    if not children then return end --This entity is just not relevant to us.
+    local parent_no = storage.compound_entity_child_to_parent[entity.unit_number] or entity.unit_number
+    local children_no = storage.compound_entity_parent_to_children[parent_no]
+    if not children_no then return end --This entity is just not relevant to us.
 
-    game.print("DING-2")
-
-    local current_pos = {x = entity.position.x, y = entity.position.y}
-    local displacement = {x = current_pos.x - old_pos.x, y = current_pos.y - old_pos.y}
+    local current_pos = {entity.position.x, entity.position.y}
+    local displacement = {current_pos[1] - old_pos[1], current_pos[2] - old_pos[2]}
 
     ---@param displace_entity LuaEntity
     local function displace(displace_entity)
         if not displace_entity.valid or entity == displace_entity then return end
-        game.print("DING-3" .. displace_entity.name)
 
-        local current_position = displace_entity.position
-        displace_entity.teleport({current_position.x + displacement.x, current_position.y + displacement.y},
-            entity.surface, true)
-        storage.compound_entity_positions[displace_entity] = displace_entity.position
+        local new_position = {displace_entity.position.x + displacement[1], displace_entity.position.y + displacement[2]}
+        displace_entity.teleport(new_position) --entity.surface, true)
+        storage.compound_entity_positions[displace_entity.unit_number] = new_position
     end
 
     entity_mid_move_lock = true
-    displace(parent)
-    for _, child in pairs(children) do
-        displace(child)
+    displace(game.get_entity_by_unit_number(parent_no))
+    for _, child_no in pairs(children_no) do
+        displace(game.get_entity_by_unit_number(child_no))
     end
+    --Log the position of the entity that changed (but we don't need to displace it
+    storage.compound_entity_positions[entity.unit_number] = current_pos
+
     entity_mid_move_lock = false
 end
 

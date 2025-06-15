@@ -10,7 +10,7 @@ local mupgrade_beacon =
     name = "mupgrade-beacon",
     icons = {{icon = "__base__/graphics/icons/beacon.png", tint = {1,0.7,1}}},
     order = "zzzzzz[hidden]-mua[mu beacon]-a",
-    flags = {"placeable-player", "not-rotatable", "not-blueprintable"},--"hide-alt-info", "player-creation"},
+    flags = {"placeable-player", "not-rotatable", "not-blueprintable", "get-by-unit-number"},--"hide-alt-info", "player-creation"},
     --minable = {mining_time = 0.2, result = "beacon"},
     fast_replaceable_group = "beacon",
 

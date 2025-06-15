@@ -5,6 +5,7 @@ if not mupgrade_lib.DEBUG_MODE then return end
 if data and data.raw and data.raw.module and table_size(data.raw.module) > 0 then
     table.insert(data.raw.technology["automation-science-pack"].effects,
         mupgrade_lib.make_modifier({icon="__base__/graphics/icons/assembling-machine-2.png"}, "speed", "assembler", 10))
+    mupgrade_lib.add_id_flag(data.raw["assembling-machine"]["assembling-machine-2"])
 
 --Control stage
 elseif script then

@@ -1,3 +1,4 @@
+--[[
 --This file controls the runtime modification of entities in a generic way.
 local entity_modifier = {}
 
@@ -5,7 +6,7 @@ local entity_modifier = {}
 --Initialize storage
 local function initialize()
     ---@class (exact) MURegistryEntry
-    ---@field entity_hashset table<uint, boolean> Hashset of entity unit-number
+    ---@field entity_hashset table<LuaEntity, boolean>
     ---@field entity_filter EntitySearchFilters 
     ---@field auto_modifier? string String used to look up a function and do it, for whenever an entity needs to be updated (or added to that cache)
     local MURegistryEntry = {}
@@ -16,8 +17,7 @@ local function initialize()
     storage.modified_entity_registry = storage.modified_entity_registry or {}
 
     ---Table of all entities which are registed to remove from the cache when destroyed.
-    ---object destruction => unit number
-    ---@type table<uint, uint>
+    ---@type table<uint, LuaEntity>
     storage.modified_entity_deregistry = storage.modified_entity_deregistry or {}
 end
 
@@ -59,9 +59,8 @@ entity_modifier.apply_auto_modifier = function(entity_handler)
         if not entry.auto_modifier then return end
         to_call = function_register[entry.auto_modifier]
         assert(to_call, "There was no registered function found under the modifier ID: " .. entry.auto_modifier)
-        for _, entity_no in pairs(entry.entity_hashset) do
-            local entity = game.get_entity_by_unit_number(entity_no)
-            if not entity or entity.valid then to_call(entity) end
+        for _, entity in pairs(entry.entity_hashset) do
+            if entity.valid then to_call(entity) end
         end
     end
 
@@ -108,18 +107,18 @@ end
 ---@param entity_handler string string that represents the ID associated with that entity category.
 ---@param entity_filter EntitySearchFilters filter of what entities should count.
 entity_modifier.create_entity_cache = function(entity_handler, entity_filter)
-    --[[local each_surface_entities = {}
-    for i, surface in pairs(game.surfaces) do
-        table.insert(each_surface_entities, 
-            surface.find_entities_filtered(entity_filter))
-    end ----entity_list = rubia_lib.array_concat(each_surface_entities),]]
+    --local each_surface_entities = {}
+    --for i, surface in pairs(game.surfaces) do
+    --    table.insert(each_surface_entities, 
+    --        surface.find_entities_filtered(entity_filter))
+    --end ----entity_list = rubia_lib.array_concat(each_surface_entities),
 
     --Make a hashset
     local entity_hashset = {}
     for _, surface in pairs(game.surfaces) do
         local surface_entities = surface.find_entities_filtered(entity_filter)
         for _, entity in pairs(surface_entities) do
-            entity_hashset[entity.unit_number] = true
+            entity_hashset[entity] = true
         end
     end
 
@@ -172,14 +171,14 @@ local function entity_satisfies_filter(entity, filter)
                 return entity.name == (entityID.name or entityID) end) then return false
         end
     end
-    --[[if filter.name and (entity.name ~= (filter.name.name or filter.name)) then
-        --Need to check by array
-        reject = true
-        for _, entityID in filter.name do
-            reject = entity.name == (entityID.name or entityID)
-        end
-        if reject then return false end
-    end]]
+    --if filter.name and (entity.name ~= (filter.name.name or filter.name)) then
+    --    --Need to check by array
+    --    reject = true
+    --    for _, entityID in filter.name do
+    --        reject = entity.name == (entityID.name or entityID)
+    --    end
+    --    if reject then return false end
+    --end
 
     local reject = false
 
@@ -194,12 +193,13 @@ local function entity_satisfies_filter(entity, filter)
     end
 
 
-    --[[Reject by wrong prototype, as true name
-    local prototype = (entity.type ~= "entity-ghost") and entity.type or entity.ghost_type
-    if filter.type and (prototype ~= filter.type)
-        and not array_find(filter.type, prototype) then
-        return false
-    end]]
+    --Reject by wrong prototype, as true name
+    --local prototype = (entity.type ~= "entity-ghost") and entity.type or entity.ghost_type
+    --if filter.type and (prototype ~= filter.type)
+    --    and not array_find(filter.type, prototype) then
+    --    return false
+    --end
+
     --Prototype rejection. Filters has separation for ghost types
     if filter.type and (entity.type ~= filter.type)
         and not array_find(filter.type, entity.type) then
@@ -231,7 +231,7 @@ local function update_on_build(entity)
     local to_deregister = false
     for _, entry in pairs(storage.modified_entity_registry or {}) do
         if entity_satisfies_filter(entity, entry.entity_filter) then
-            entry.entity_hashset[entity.unit_number] = true
+            entry.entity_hashset[entity] = true
             to_deregister = true
 
             --Auto-modify
@@ -248,20 +248,20 @@ local function update_on_build(entity)
     if to_deregister then
         local delist_ID = script.register_on_object_destroyed(entity)
         --storage.modified_entity_deregistry = storage.modified_entity_deregistry or {}
-        storage.modified_entity_deregistry[delist_ID] = entity.unit_number
+        storage.modified_entity_deregistry[delist_ID] = entity
     end
 end
 
 ---LuaEntity was just destroyed. Delist it.
 ---@param entity_reg_ID uint Entity registration ID
 local function update_on_object_destroyed(entity_reg_ID)
-    local entity_no = storage.modified_entity_deregistry 
+    local entity = storage.modified_entity_deregistry 
         and storage.modified_entity_deregistry[entity_reg_ID]
 
-    if not entity_no then return end --Was never registered
+    if not entity then return end --Was never registered
     --Then go delist
     for _, entry in pairs(storage.modified_entity_registry or {}) do
-        entry.entity_hashset[entity_no] = nil
+        entry.entity_hashset[entity] = nil
     end
     storage.modified_entity_deregistry[entity_reg_ID] = nil
 end
@@ -311,3 +311,4 @@ event_lib.on_event(defines.events.on_object_destroyed, "entity-cache-update",
 
 
 return entity_modifier
+]]

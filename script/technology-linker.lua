@@ -165,6 +165,7 @@ remote.add_interface("machine-upgrades-techlink",{
     add_technology_effect = function(technology_name, entity_name, effect, entity_handler, auto_merge_handler)
         assert(prototypes.technology[technology_name],"Invalid technology name was passed: " .. technology_name)
         assert(prototypes.entity[entity_name],"Invalid entity name was passed: " .. entity_name)
+        assert(prototypes.entity[entity_name].has_flag("get-by-unit-number"), "This entity needs the get-by-unit-number flag to function: " .. entity_name)
         assert(entity_handler ~= entity_name, "Entity handler should not match the entity name, to protect vs migration. See: " .. entity_handler)
 
         local modules = module_counter.effect_to_module_counts(effect)
@@ -206,7 +207,9 @@ remote.add_interface("machine-upgrades-techlink",{
     ---@param entity_name string
     remove_technology_effect = function(technology_name, entity_name)
         assert(prototypes.technology[technology_name],"Invalid technology name was passed: " .. technology_name)
-        assert(prototypes.entity[entity_name],"Invalid entity name was passed: " .. entity_name)
+        local prototype = prototypes.entity[entity_name]
+        assert(prototype,"Invalid entity name was passed: " .. entity_name)
+        assert(prototype.has_flag("get-by-unit-number"), "This entity needs the get-by-unit-number flag to function: " .. entity_name)
 
         local old_handler = storage.entity_name_to_handler[entity_name]
         entity_modifier.remove_entity_cache(old_handler)
