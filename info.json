@@ -7,7 +7,7 @@
     "dependencies": ["base >= 2.0.55"
     ],
     "space_travel_required": true,
-    "description": "This mod provides machinery to upgrade entities at runtime via technologies. This mod does nothing by itself, and is inteded to be used with other mods.",
+    "description": "This mod provides an API to make technologies that upgrade crafting machines (at runtime). Example: Researching X => Assemblers +10% Speed, or Chemical Plants +20% Productivity. This mod does nothing by itself, and is inteded to be used with other mods.",
     "homepage": "https://discord.gg/CaDJzEj557",
     "package":{
         "ignore":[ "**/*.mp3", "**/*.xcf", ".vscode/*", "deprecated/*"]

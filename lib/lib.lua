@@ -1,6 +1,6 @@
 _G.mupgrade_lib = {}
 
---mupgrade_lib.DEBUG_MODE = true
+mupgrade_lib.DEBUG_MODE = true
 
 
 ---Get the current stage that we are in

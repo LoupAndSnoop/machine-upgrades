@@ -3,7 +3,45 @@ if not mupgrade_lib.DEBUG_MODE then return end
 
 ----------------------
 
---#region Example 1: Assembler-2 gets speed in automation science pack
+--#region Example 1: Multiple entities at once via the easy custom mupgrade data
+
+---Define this object the same way in both data and control stage
+local my_upgrade_data = {
+    {
+        handler = "Assembler speed boosting",
+        technology_name = "steel-processing",
+        modifier_icon = {icon="__base__/graphics/icons/chemical-plant.png"},
+        entity_names = {"electric-furnace", "oil-refinery"},
+        module_effects = {speed = 0.3, pollution = -0.1},
+        effect_name = nil,
+    },
+    {
+        handler = "Actually uses assemblers",
+        technology_name = "steam-power",
+        modifier_icon = {icon="__base__/graphics/icons/electric-furnace.png"},
+        entity_names = {"assembling-machine-2"},
+        module_effects = {productivity = -0.1, consumption = -0.1, quality = 0.2},
+        effect_name = "Big Dick", --would make an effect that says "Big Dick: -10% Productivity
+    }
+}
+
+------You can legit copy-paste this next block of code into a file that is run in both data and control stage.
+-- What to do in Data stage
+if data and data.raw and data.raw.module and table_size(data.raw.module) > 0 then
+    mupgrade_lib.handle_modifier_data(my_upgrade_data)
+--What to do in Control stage
+elseif script then
+    local function register1() remote.call("machine-upgrades-techlink", "add_upgrade_data", my_upgrade_data) end
+
+    --Use whatever event handling you want, but that remote interface needs to get called on_init and on_configuration_changed!
+    local event_lib = require("__machine-upgrades__.script.event-lib")
+    event_lib.on_init("test-suite-1", register1)
+    event_lib.on_configuration_changed("test-suite-1", register1)
+end
+
+--------------------
+
+--#region Example 2: Assembler-2 gets speed in automation science pack
 -- What to do in Data stage
 if data and data.raw and data.raw.module and table_size(data.raw.module) > 0 then
     table.insert(data.raw.technology["automation-science-pack"].effects,
@@ -26,7 +64,7 @@ end
 --#endregion
 
 -------------------
---#region Example 2: Multiple entities at once (which is substantially more UPS-efficient!)
+--#region Example 3: Multiple entities at once (which is substantially more UPS-efficient!)
 -- What to do in Data stage
 if data and data.raw and data.raw.module and table_size(data.raw.module) > 0 then
     table.insert(data.raw.technology["logistic-science-pack"].effects,
@@ -55,7 +93,7 @@ end
 
 
 
---#region Example 3: An infinite technology
+--#region Example 4: An infinite technology
 -- What to do in Data stage
 if data and data.raw and data.raw.module and table_size(data.raw.module) > 0 then
     table.insert(data.raw.technology["physical-projectile-damage-7"].effects,

@@ -241,8 +241,20 @@ remote.add_interface("machine-upgrades-techlink",{
 
     ---Print and log a record of all the technology effects currently in place by the mod.
     print_current_links = function() mupgrade_lib.print_links() end,
-})
 
+    ---Set up quickly multiple mupgrades.
+    ---@param mupgrade_data_array MUpgradeData[]
+    add_upgrade_data = function(mupgrade_data_array)
+        assert(mupgrade_data_array, "MUpgrade data array was null!")
+        assert(table_size(mupgrade_data_array) > 0,"There are no MUpgrades in this array to work with!")
+        
+        for _, mupgrade_data in pairs(mupgrade_data_array) do
+            remote.call("machine-upgrades-techlink", "add_technology_effect",
+                mupgrade_data.technology_name, mupgrade_data.entity_names, mupgrade_data.module_effects, 
+                mupgrade_data.handler, false)
+        end
+    end,
+})
 
 ---Update everything from that tech, optionally limited to just that force.
 ---@param technology_name string
