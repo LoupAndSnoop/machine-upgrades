@@ -123,9 +123,19 @@ local function find_entity_prototype(entity_name)
     error("No entity prototype found by the name: " .. entity_name) 
 end
 
+
+----Sending MUpgradeData to control stage
+---@param mupgrade_data MUpgradeData
+local function pack_for_control_stage(mupgrade_data)
+    local bigpack = require("__machine-upgrades__.lib.big-data-string-pack")
+    data:extend{bigpack(mupgrade_lib.AUTO_PACK_PREFIX .. mupgrade_data.handler, serpent.dump(mupgrade_data))}
+end
+
+
 ---Go handle all the relevant MUpgrade data, making all the effects on the relevant techs, during data stage.
 ---@param mupgrade_data_array MUpgradeData[]
-function mupgrade_lib.handle_modifier_data(mupgrade_data_array)
+---@param manual_pack boolean? (default to false). If set false, then the MUpgrade mod will automatically pack up and take care of everything in control stage as well. Set false to do it full auto.
+function mupgrade_lib.handle_modifier_data(mupgrade_data_array, manual_pack)
     for _, mupgrade_data in pairs(mupgrade_data_array) do
         assert(mupgrade_data.entity_names, "No entity names are included!")
         assert(table_size(mupgrade_data.entity_names) > 0, "No entity names are in the effect!")
@@ -151,6 +161,8 @@ function mupgrade_lib.handle_modifier_data(mupgrade_data_array)
             else table.insert(technology.effects, modifier)
             end
         end
+
+        if (not manual_pack) then pack_for_control_stage(mupgrade_data) end
     end
 end
 

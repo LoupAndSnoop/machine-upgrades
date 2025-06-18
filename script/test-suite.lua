@@ -8,35 +8,42 @@ if not mupgrade_lib.DEBUG_MODE then return end
 ---Define this object the same way in both data and control stage
 local my_upgrade_data = {
     {
-        handler = "Assembler speed boosting",
+        handler = "Assembler-speed-boosting",
         technology_name = "steel-processing",
-        modifier_icon = {icon="__base__/graphics/icons/chemical-plant.png"},
+        modifier_icon = {icon="__base__/graphics/icons/electric-furnace.png"},
         entity_names = {"electric-furnace", "oil-refinery"},
         module_effects = {speed = 0.3, pollution = -0.1},
-        effect_name = nil,
+        effect_name = nil, --would make an effect that says "Electric Furnace: -10% Productivity
     },
     {
-        handler = "Actually uses assemblers",
+        handler = "Actually_uses_assemblers",
         technology_name = "steam-power",
-        modifier_icon = {icon="__base__/graphics/icons/electric-furnace.png"},
+        modifier_icon = {icon="__base__/graphics/icons/chemical-plant.png"},
         entity_names = {"assembling-machine-2"},
         module_effects = {productivity = -0.1, consumption = -0.1, quality = 0.2},
-        effect_name = "Big Dick", --would make an effect that says "Big Dick: -10% Productivity
+        effect_name = "My custom string", --would make an effect that says "My custom string: -10% Productivity
     }
 }
 
-------You can legit copy-paste this next block of code into a file that is run in both data and control stage.
+if data and data.raw and data.raw.module and table_size(data.raw.module) > 0 then
+    --Option 1: Easiest. Full auto mode. Call this function in data stage, and you are done!
+    mupgrade_lib.handle_modifier_data(my_upgrade_data)
+
+end
+----Option 2: Full manual control, where you can decide event subscription
+--[[
+----You can legit copy-paste this next block of code into a file that is run in both data and control stage.
 -- What to do in Data stage
 if data and data.raw and data.raw.module and table_size(data.raw.module) > 0 then
-    mupgrade_lib.handle_modifier_data(my_upgrade_data)
+    mupgrade_lib.handle_modifier_data(my_upgrade_data, true)
 --What to do in Control stage
 elseif script then
-    local function register1() remote.call("machine-upgrades-techlink", "add_upgrade_data", my_upgrade_data) end
+    local function register() remote.call("machine-upgrades-techlink", "add_upgrade_data", my_upgrade_data) end
 
     --Use whatever event handling you want, but that remote interface needs to get called on_init and on_configuration_changed!
     local event_lib = require("__machine-upgrades__.script.event-lib")
-    event_lib.on_init("test-suite-1", register1)
-    event_lib.on_configuration_changed("test-suite-1", register1)
+    event_lib.on_init("test-suite-1", register) --This particular event handler would need a unique string here
+    event_lib.on_configuration_changed("test-suite-1", register)
 end
 
 --------------------
@@ -51,15 +58,15 @@ if data and data.raw and data.raw.module and table_size(data.raw.module) > 0 the
 
 --What to do in Control stage
 elseif script then
-    local function register()
+    local function register1()
         remote.call("machine-upgrades-techlink", "add_technology_effect", 
                 "automation-science-pack", "assembling-machine-2", {speed=0.1}, "Assembler1")
     end
 
     --Use whatever event handling you want, but that remote interface needs to get called on_init and on_configuration_changed!
     local event_lib = require("__machine-upgrades__.script.event-lib")
-    event_lib.on_init("test-suite", register)
-    event_lib.on_configuration_changed("test-suite", register)
+    event_lib.on_init("test-suite", register1)
+    event_lib.on_configuration_changed("test-suite", register1)
 end
 --#endregion
 
