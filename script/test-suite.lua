@@ -27,9 +27,14 @@ local my_upgrade_data = {
 
 if data and data.raw and data.raw.module and table_size(data.raw.module) > 0 then
     --Option 1: Easiest. Full auto mode. Call this function in data stage, and you are done!
-    mupgrade_lib.handle_modifier_data(my_upgrade_data)
-
+    local mupgrades = require("__machine-upgrades__.lib.technology-maker")
+    mupgrades.handle_modifier_data(my_upgrade_data)
 end
+
+------------------
+---Other options and examples in this file are for if you want full auto control.
+-----------------
+
 ----Option 2: Full manual control, where you can decide event subscription
 --[[
 ----You can legit copy-paste this next block of code into a file that is run in both data and control stage.

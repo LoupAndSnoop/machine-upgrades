@@ -1,6 +1,6 @@
 _G.mupgrade_lib = {}
 
-mupgrade_lib.DEBUG_MODE = true
+--mupgrade_lib.DEBUG_MODE = true
 mupgrade_lib.AUTO_PACK_PREFIX = "mupgrade-lib-packed-"
 
 ---Get the current stage that we are in
