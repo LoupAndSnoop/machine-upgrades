@@ -32,8 +32,20 @@ for key in pairs(modifier_key) do table.insert(valid_modifier_names, key) end
 ---@field entity_names string[] Array of strings of entity names for everything affected
 ---@field effect_name data.LocalisedString | string? Entity name of the machine to use in the effect modifier. Defaults to the first entry in the entity_names array
 ---@field module_effects ModuleEffects module effects to be assigning to everything included
+---@field hidden_entity_names string[]? An array of strings of entity names, where any entity name will NOT be shown in a technology effect (even if it is affected).
 local MUpgradeData = {}
 
+
+---Find a prototype tied to a specific entity name.
+---@param entity_name string
+local function find_entity_prototype(entity_name)
+    assert(entity_name, "Null entity name!")
+    for type in pairs(defines.prototypes.entity) do
+        local prototype = data.raw[type] and data.raw[type][entity_name]
+        if prototype then return prototype end
+    end
+    error("No entity prototype found by the name: " .. entity_name) 
+end
 
 
 ---Make a stock technology effect, by inputting a base IconData 
@@ -68,15 +80,22 @@ function mupgrade_tech_maker.make_modifier(base_icon, modifier_name, machine_nam
     local sign = (stated_effect_strength > 0) and "+" or "-"
     local full_description = {""}
     for _, each_name in pairs(entity_names or {}) do
+        --Find the best name
+        local proto = find_entity_prototype(each_name)
+        local true_name = proto.localised_name or {"entity-name." .. each_name}
+        table.insert(full_description, {"","[entity=" .. each_name .. "] ",true_name,"\n"})
+        --[[
         table.insert(full_description, "[entity=" .. each_name .. "] ")
         table.insert(full_description, {"entity-name." .. each_name})
-        table.insert(full_description, "\n")
+        table.insert(full_description, "\n")]]
     end
-    local post_description = {machine_name or "modifier-description.mupgrade-default-effect-description",
-         ": ", modifier_data.name, " " .. sign .. tostring(math.abs(stated_effect_strength)) .. "%"}
-    for _, entry in pairs(post_description) do
-        table.insert(full_description, entry)
-    end
+    table.insert(full_description, {"", machine_name or "modifier-description.mupgrade-default-effect-description",
+         ": ", modifier_data.name, " " .. sign .. tostring(math.abs(stated_effect_strength)) .. "%"})
+    --local post_description = {machine_name or "modifier-description.mupgrade-default-effect-description",
+    --     ": ", modifier_data.name, " " .. sign .. tostring(math.abs(stated_effect_strength)) .. "%"}
+    --for _, entry in pairs(post_description) do
+     --   table.insert(full_description, entry)
+    --end
     --local full_description = {"", machine_name or "modifier-description.mupgrade-default-effect-description",
      --   ": ", modifier_data.name, " " .. sign .. tostring(math.abs(stated_effect_strength)) .. "%"}
 
@@ -114,19 +133,6 @@ function mupgrade_tech_maker.make_technology_icon(base_icon, modifier_name)
     return icons
 end
 
----Find a prototype tied to a specific entity name.
----@param entity_name string
-local function find_entity_prototype(entity_name)
-    assert(entity_name, "Null entity name!")
-    for type in pairs(defines.prototypes.entity) do
-        local prototype = data.raw[type] and data.raw[type][entity_name]
-        if prototype then return prototype end
-    end
-    error("No entity prototype found by the name: " .. entity_name) 
-end
-
-
-
 ----Sending MUpgradeData to control stage
 ---@param mupgrade_data MUpgradeData
 local function pack_for_control_stage(mupgrade_data)
@@ -141,6 +147,7 @@ end
 function mupgrade_tech_maker.handle_modifier_data(mupgrade_data_array, manual_pack)
     for _, mupgrade_data in pairs(mupgrade_data_array) do
         assert(mupgrade_data.entity_names, "No entity names are included!")
+        assert(type(mupgrade_data.entity_names) == "table", "Entity names should be input as an array of strings!")
         assert(table_size(mupgrade_data.entity_names) > 0, "No entity names are in the effect!")
 
         if not mupgrade_data.effect_name then 
@@ -154,12 +161,20 @@ function mupgrade_tech_maker.handle_modifier_data(mupgrade_data_array, manual_pa
             mupgrade_tech_maker.add_id_flag(find_entity_prototype(name))
         end
 
+        ---Make a separae list of entities that acknowledges hiding entities from the modifier
+        local to_hide = {}
+        for _, entry in pairs(mupgrade_data.hidden_entity_names or {}) do to_hide[entry] = true end
+        local displayed_entity_names = {}
+        for _, entry in pairs(mupgrade_data.entity_names) do
+            if not to_hide[entry] then table.insert(displayed_entity_names, entry) end
+        end
+
         --Go add the effect to the existing technology prototype.
         for effect_name, effect_str in pairs(mupgrade_data.module_effects) do
             local stated_strength = effect_str * ((effect_name == "quality") and 10 or 100)
 
             local modifier = mupgrade_tech_maker.make_modifier(mupgrade_data.modifier_icon, effect_name, mupgrade_data.effect_name,
-                stated_strength, mupgrade_data.entity_names)
+                stated_strength, displayed_entity_names)
             if not technology.effects then technology.effects = {modifier}
             else table.insert(technology.effects, modifier)
             end
@@ -196,6 +211,15 @@ function mupgrade_tech_maker.remove_duplicates(array)
     return new_array
 end
 
+---Array go in. If there are any entries in the array that == entry, then remove it. Alters the input array.
+---@param array any[]
+---@param entry any
+function mupgrade_tech_maker.try_remove(array, entry)
+    for i = table_size(array), 1, -1 do
+        if array[i] == entry then table.remove(array, i) end
+    end
+end
+
 
 ---Find all crafting machines that have the given crafting category
 ---@param crafting_category string name of crafting category
@@ -203,9 +227,10 @@ end
 function mupgrade_tech_maker.find_machines_with_crafting_category(crafting_category)
     local entity_names = {}
     for category in pairs(defines.prototypes.entity) do
-        for name, proto in pairs(data.raw[category]) do
+        for name, proto in pairs(data.raw[category] or {}) do
             if proto.crafting_categories and mupgrade_tech_maker.array_find(proto.crafting_categories, crafting_category) --has the category
-                and proto.module_slots and proto.module_slots > 0 then --Only works if it has modules
+                and ((not proto.effect_receiver) or proto.effect_receiver.uses_beacon_effects)then --Only works if it has modules
+                    --(proto.module_slots and proto.module_slots > 0) --Only works if it has modules
                 table.insert(entity_names, name)
             end
         end
