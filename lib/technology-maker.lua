@@ -166,7 +166,10 @@ function mupgrade_tech_maker.handle_modifier_data(mupgrade_data_array, manual_pa
         for _, entry in pairs(mupgrade_data.hidden_entity_names or {}) do to_hide[entry] = true end
         local displayed_entity_names = {}
         for _, entry in pairs(mupgrade_data.entity_names) do
-            if not to_hide[entry] then table.insert(displayed_entity_names, entry) end
+            --Also automatically hide if it is is hidden.
+            local proto = find_entity_prototype(entry)
+            if not to_hide[entry] and not proto.hidden then table.insert(displayed_entity_names, entry)
+            end
         end
 
         --Go add the effect to the existing technology prototype.
