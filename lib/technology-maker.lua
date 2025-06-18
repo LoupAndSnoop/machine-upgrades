@@ -162,7 +162,7 @@ function mupgrade_tech_maker.handle_modifier_data(mupgrade_data_array, manual_pa
         end
 
         ---Make a separae list of entities that acknowledges hiding entities from the modifier
-        local to_hide = {}
+        local to_hide = {["character"]=true}
         for _, entry in pairs(mupgrade_data.hidden_entity_names or {}) do to_hide[entry] = true end
         local displayed_entity_names = {}
         for _, entry in pairs(mupgrade_data.entity_names) do
