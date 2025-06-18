@@ -169,9 +169,55 @@ function mupgrade_tech_maker.handle_modifier_data(mupgrade_data_array, manual_pa
     end
 end
 
+------
+--#region Helper functions to help find prototypes quickly in data stage, to quickly make MUpgradeData
+
+--If the input array contains the given value, return the index of that value (=true!)
+--Otherwise, output false
+function mupgrade_tech_maker.array_find(array, value)
+  for index, val in pairs(array) do
+    if val == value then return index end
+  end
+  return false
+end
+
+---Array go in. Array with no duplicates comes out. Keep the order. Reference-type entries of the new array will refer to the same objects.
+---@param array any[]
+---@return any[] new_array
+function mupgrade_tech_maker.remove_duplicates(array)
+    local hashset = {}
+    local new_array = {}
+    for _, entry in pairs(array) do
+        if not hashset[entry] then
+            hashset[entry] = true
+            table.insert(new_array, entry)
+        end
+    end
+    return new_array
+end
+
+
+---Find all crafting machines that have the given crafting category
+---@param crafting_category string name of crafting category
+---@return string[] entity_names Array of names of all entities with that crafting category.
+function mupgrade_tech_maker.find_machines_with_crafting_category(crafting_category)
+    local entity_names = {}
+    for category in pairs(defines.prototypes.entity) do
+        for name, proto in pairs(data.raw[category]) do
+            if proto.crafting_categories and mupgrade_tech_maker.array_find(proto.crafting_categories, crafting_category) --has the category
+                and proto.module_slots and proto.module_slots > 0 then --Only works if it has modules
+                table.insert(entity_names, name)
+            end
+        end
+    end
+    return entity_names
+end
+
+
+--#endregion
+
 --Put it all in our global variable, for alternate access.
 for x, y in pairs(mupgrade_tech_maker) do mupgrade_lib[x] = y end
-
 return mupgrade_tech_maker
 
 --Test technology (example)
