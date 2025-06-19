@@ -247,8 +247,9 @@ remote.add_interface("machine-upgrades-techlink",{
     add_upgrade_data = function(mupgrade_data_array)
         assert(mupgrade_data_array, "MUpgrade data array was null!")
         assert(table_size(mupgrade_data_array) > 0,"There are no MUpgrades in this array to work with!")
-        
+    
         for _, mupgrade_data in pairs(mupgrade_data_array) do
+            mupgrade_lib.assert_valid_mupgrade_data(mupgrade_data)
             remote.call("machine-upgrades-techlink", "add_technology_effect",
                 mupgrade_data.technology_name, mupgrade_data.entity_names, mupgrade_data.module_effects, 
                 mupgrade_data.handler, false)

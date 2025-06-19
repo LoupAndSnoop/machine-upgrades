@@ -31,12 +31,15 @@ if data and data.raw and data.raw.module and table_size(data.raw.module) > 0 the
     mupgrades.handle_modifier_data(my_upgrade_data)
 end
 
-------------------
+
+
+
+---------------------------------------
+if true then return end
 ---Other options and examples in this file are for if you want full auto control.
 -----------------
 
 ----Option 2: Full manual control, where you can decide event subscription
---[[
 ----You can legit copy-paste this next block of code into a file that is run in both data and control stage.
 -- What to do in Data stage
 if data and data.raw and data.raw.module and table_size(data.raw.module) > 0 then
