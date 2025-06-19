@@ -33,6 +33,7 @@ end
 ---@param mupgrade_data MUpgradeData
 function mupgrade_lib.assert_valid_mupgrade_data(mupgrade_data)
   --Handler
+  assert(mupgrade_data, "Null mupgrade data!")
   assert(mupgrade_data.handler, "No handler found for this Mupgrade data: " .. serpent.block(mupgrade_data))
   assert(type(mupgrade_data.handler) == "string",
     "Invalid handler for mupgrade data with handler: " .. tostring(mupgrade_data.handler))
@@ -40,8 +41,9 @@ function mupgrade_lib.assert_valid_mupgrade_data(mupgrade_data)
 
   --Tech
   local stage = mupgrade_lib.get_current_stage()
+  assert(stage == "data" or stage == "control", "Assertion checker was called during invalid data lifecycle stage: " .. stage)
   local technology = nil
-  if stage == data then technology = data.raw["technology"][mupgrade_data.technology_name]
+  if stage == "data" then technology = data.raw["technology"][mupgrade_data.technology_name]
   else technology = prototypes.technology[mupgrade_data.technology_name]
   end
   assert(technology, handler_string .. "No valid technology found by the name: " .. tostring(mupgrade_data.technology_name))
@@ -51,7 +53,7 @@ function mupgrade_lib.assert_valid_mupgrade_data(mupgrade_data)
       local prototype
       if mupgrade_lib.get_current_stage() == "data" then
         for type in pairs(defines.prototypes.entity) do
-            local prototype = data.raw[type] and data.raw[type][entity_name]
+            prototype = data.raw[type] and data.raw[type][entity_name]
             if prototype then return prototype end
         end
         error(handler_string .. "No entity prototype found by the name: " .. entity_name) 
@@ -66,9 +68,9 @@ function mupgrade_lib.assert_valid_mupgrade_data(mupgrade_data)
   end
 
   --Module effects
-  assert(modifiers.module_effects, handler_string .. "No module effects found.")
+  assert(mupgrade_data.module_effects, handler_string .. "No module effects found.")
   local modifiers = {["speed"]=true, ["consumption"]=true, ["productivity"]=true, ["pollution"]=true, ["quality"]=true}
-  for effect in pairs(modifiers.module_effects) do 
-    assert(modifiers[effect], handler_string .. "Invalid name for a module effect: " .. tostring(effect))
+  for effect in pairs(mupgrade_data.module_effects) do 
+    assert(mupgrade_data.module_effects[effect], handler_string .. "Invalid name for a module effect: " .. tostring(effect))
   end
 end

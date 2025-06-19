@@ -40,6 +40,7 @@ end
 ---Add a new technology effect.
 ---@param new_effect MUTechEffect
 local function add_technology_effect(new_effect)
+    assert(prototypes.technology[new_effect.technology_name], "Invalid technology name: " .. new_effect.technology_name)
     --If technology has nothing in it, then need new list. Otherwise, add to the array.
     local tech_effects = storage.linked_technologies[new_effect.technology_name]
     if not tech_effects then
@@ -279,15 +280,19 @@ end
 local event_lib = require("__machine-upgrades__.script.event-lib")
 event_lib.on_init("tech-link-initialize", initialize_storage)
 event_lib.on_configuration_changed("tech-link-initialize", initialize_storage)
+
+event_lib.on_init("tech-link-clear", clear_all_effects)
 event_lib.on_configuration_changed("tech-link-clear", clear_all_effects)
 
 --This needs to delay by a tick, so other scripts can tell us what they need
-event_lib.on_configuration_changed("tech-link-update-all", function()
+local function update_all_next_tick()
     event_lib.on_nth_tick(1, "tech-link-force-update", function()
         update_all_entities()
         event_lib.on_nth_tick(1, "tech-link-force-update", nil)
     end)
-end)
+end
+event_lib.on_init("tech-link-update-all", update_all_next_tick)
+event_lib.on_configuration_changed("tech-link-update-all", update_all_next_tick)
 
 event_lib.on_event(defines.events.on_technology_effects_reset,
     "tech-link-update-all", update_all_entities)

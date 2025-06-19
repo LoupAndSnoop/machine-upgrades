@@ -84,20 +84,9 @@ function mupgrade_tech_maker.make_modifier(base_icon, modifier_name, machine_nam
         local proto = find_entity_prototype(each_name)
         local true_name = proto.localised_name or {"entity-name." .. each_name}
         table.insert(full_description, {"","[entity=" .. each_name .. "] ",true_name,"\n"})
-        --[[
-        table.insert(full_description, "[entity=" .. each_name .. "] ")
-        table.insert(full_description, {"entity-name." .. each_name})
-        table.insert(full_description, "\n")]]
     end
     table.insert(full_description, {"", machine_name or "modifier-description.mupgrade-default-effect-description",
          ": ", modifier_data.name, " " .. sign .. tostring(math.abs(stated_effect_strength)) .. "%"})
-    --local post_description = {machine_name or "modifier-description.mupgrade-default-effect-description",
-    --     ": ", modifier_data.name, " " .. sign .. tostring(math.abs(stated_effect_strength)) .. "%"}
-    --for _, entry in pairs(post_description) do
-     --   table.insert(full_description, entry)
-    --end
-    --local full_description = {"", machine_name or "modifier-description.mupgrade-default-effect-description",
-     --   ": ", modifier_data.name, " " .. sign .. tostring(math.abs(stated_effect_strength)) .. "%"}
 
     --Make the actual effect
     local effect = {
@@ -146,6 +135,7 @@ end
 ---@param manual_pack boolean? (default to false). If set false, then the MUpgrade mod will automatically pack up and take care of everything in control stage as well. Set false to do it full auto.
 function mupgrade_tech_maker.handle_modifier_data(mupgrade_data_array, manual_pack)
     for _, mupgrade_data in pairs(mupgrade_data_array) do
+        mupgrade_lib.assert_valid_mupgrade_data(mupgrade_data)
         assert(mupgrade_data.entity_names, "No entity names are included!")
         assert(type(mupgrade_data.entity_names) == "table", "Entity names should be input as an array of strings!")
         assert(table_size(mupgrade_data.entity_names) > 0, "No entity names are in the effect!")
