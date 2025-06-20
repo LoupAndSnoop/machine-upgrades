@@ -33,11 +33,16 @@ end
 
 
 
-
+---------------------------------------
+---------------------------------------
+---------------------------------------
 ---------------------------------------
 if true then return end
----Other options and examples in this file are for if you want full auto control.
------------------
+---Other options and examples in this file are for if you want full auto control with more low-level control over each individual step.
+---------------------------------------
+---------------------------------------
+---------------------------------------
+---------------------------------------
 
 ----Option 2: Full manual control, where you can decide event subscription
 ----You can legit copy-paste this next block of code into a file that is run in both data and control stage.

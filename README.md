@@ -3,7 +3,6 @@ Reach me fastest on Discord.
 
 This mod allows you to make technologies upgrade a machine like with the effect of a module effect.
 
-
 Look at **test-suite.lua** to see actual working usage.
 
 --------
@@ -27,7 +26,9 @@ local my_upgrade_data = {
     }
 }
 
-mupgrade_lib.handle_modifier_data(my_upgrade_data)
+local mupgrades = require("__machine-upgrades__.lib.technology-maker")
+mupgrades.handle_modifier_data(my_upgrade_data)
+
 ---------
 
 
