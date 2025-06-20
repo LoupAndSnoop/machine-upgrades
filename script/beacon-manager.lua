@@ -89,7 +89,9 @@ local function update_all_entity_moduling(entity_handler, force_set)
     --Now go update them
     for entity_no in pairs(cached_entities) do
         local entity = game.get_entity_by_unit_number(entity_no)
-        update_entity_moduling(entity, module_lookup[entity.force_index][entity.name])
+        if entity and entity.valid then
+            update_entity_moduling(entity, module_lookup[entity.force_index][entity.name])
+        end
     end
 end
 

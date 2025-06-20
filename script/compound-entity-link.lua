@@ -122,7 +122,7 @@ local function on_entity_moved(entity)
 
     ---@param displace_entity LuaEntity
     local function displace(displace_entity)
-        if not displace_entity.valid or entity == displace_entity then return end
+        if not displace_entity or not displace_entity.valid or entity == displace_entity then return end
 
         local new_position = {displace_entity.position.x + displacement[1], displace_entity.position.y + displacement[2]}
         displace_entity.teleport(new_position) --entity.surface, true)
