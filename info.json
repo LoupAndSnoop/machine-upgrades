@@ -9,6 +9,6 @@
     "description": "This mod provides an API to make technologies that upgrade crafting machines (at runtime). Example: Researching X => Assemblers +10% Speed, or Chemical Plants +20% Productivity. This mod does nothing by itself, and is intended to be used with other mods.",
     "homepage": "https://discord.gg/CaDJzEj557",
     "package":{
-        "ignore":[ "**/*.mp3", "**/*.xcf", ".vscode/*", "deprecated/*"]
+        "ignore":[ "**/*.mp3", "**/*.xcf", "**/*.zip", ".vscode/*", "deprecated/*"]
     }
 }
