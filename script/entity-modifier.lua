@@ -11,7 +11,7 @@ local function initialize()
     local MURegistryEntry = {}
 
     ---Maintain a global cache stored of that specific entity
-    ---string that corresponds to a handle of a specific sort of entity to store => hashset of that LuaEntity.
+    ---string that corresponds to a handle of a specific sort of entity to store (entity handler) => hashset of that LuaEntity.
     ---@type table<string, MURegistryEntry>
     storage.modified_entity_registry = storage.modified_entity_registry or {}
 

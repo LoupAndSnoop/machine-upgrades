@@ -2,6 +2,7 @@
 Version: 0.69.5
 Date: ????
   Changes:
+    - Fixed issues with mods that would dynamically create/delete/merge forces. Also more robust multiplayer.
 ---------------------------------------------------------------------------------------------------
 Version: 0.69.4
 Date: 2025-06-21

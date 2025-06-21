@@ -90,7 +90,10 @@ local function update_all_entity_moduling(entity_handler, force_set)
     for entity_no in pairs(cached_entities) do
         local entity = game.get_entity_by_unit_number(entity_no)
         if entity and entity.valid then
-            update_entity_moduling(entity, module_lookup[entity.force_index][entity.name])
+            local modules = module_lookup[entity.force_index]
+            if modules then --This effectively filters following the force set.
+                update_entity_moduling(entity, modules[entity.name])
+            end
         end
     end
 end
@@ -117,9 +120,11 @@ end
 ---@param force LuaForce? optionally limit to just this lua force
 function beacon_manager.request_entity_update(entity_handler, force)
     assert(entity_handler, "Null entity handler passed!")
+    --log("Requesting update: " .. tostring(entity_handler) .. ", Force = " .. tostring(force))
     --All forces, if not specified
-    if not force then storage.entities_needing_update[entity_handler] = 
-        mupgrade_lib.dictionary_values_to_hashset(game.forces)
+    if not force then
+        storage.entities_needing_update[entity_handler] = 
+            mupgrade_lib.dictionary_values_to_hashset(game.forces)
     else
         local existing_forces = storage.entities_needing_update[entity_handler]
         if existing_forces then existing_forces[force] = true
@@ -127,6 +132,16 @@ function beacon_manager.request_entity_update(entity_handler, force)
         end
     end
 end
+
+---Request an update for all handlers for this force.
+---@param force LuaForce? For this force. If nil, then do ALL forces.
+local function request_force_update(force)
+    for entity_handler in pairs(storage.modified_entity_registry or {}) do
+        beacon_manager.request_entity_update(entity_handler, force)
+    end
+end
+
+
 ---Update all entities that are currently in need of updating, all at once. This prevents duplicate calls.
 function beacon_manager.regular_update()
     for entity_handler, force_set in pairs(storage.entities_needing_update or {}) do
@@ -144,5 +159,11 @@ event_lib.on_init("beacon-manager-initialize", initialize)
 event_lib.on_configuration_changed("beacon-manager-initialize", initialize)
 --event_lib.on_configuration_changed("beacon-manager-cancel-updates", cancel_updates)
 event_lib.on_nth_tick(1, "beacon-manager-regular_update", beacon_manager.regular_update)
+
+--Some mods fuck with forces
+event_lib.on_event({defines.events.on_force_created, defines.events.on_force_reset},"beacon-manager-forces-changed",
+    function(event) request_force_update(event.force) end)
+event_lib.on_event({defines.events.on_forces_merging},"beacon-manager-forces-changed",
+    function(event) request_force_update(event.source); request_force_update(event.destination) end)
 
 return beacon_manager
