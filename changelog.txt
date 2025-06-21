@@ -2,6 +2,7 @@
 Version: 0.69.6
 Date: ????
   Changes:
+    - Fixed bug where inserters could get stuck targetting the invisible beacons.
 ---------------------------------------------------------------------------------------------------
 Version: 0.69.5
 Date: 2025-06-21
