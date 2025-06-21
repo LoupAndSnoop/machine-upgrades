@@ -64,7 +64,9 @@ function mupgrade_lib.assert_valid_mupgrade_data(mupgrade_data)
   for _, entity_name in pairs(mupgrade_data.entity_names) do
     assert(entity_name, handler_string .. "Null entity name!")
     assert(entity_name ~= "", handler_string .. "Entity name is an empty string!")
-    assert(find_entity_prototype(entity_name), handler_string .. "No valid entity prototype found under the name: " .. tostring(entity_name))
+    local proto = find_entity_prototype(entity_name)
+    assert(proto, handler_string .. "No valid entity prototype found under the name: " .. tostring(entity_name))
+    assert(proto.type ~= "character", handler_string .. "We were passed data for a character: " .. tostring(entity_name))
   end
 
   --Module effects

@@ -12,7 +12,9 @@ local all_modules = prototypes.get_item_filtered({{filter = "type", type = "modu
 for _, entry in pairs(all_modules) do
     if prototypes.get_history("module", entry.name).created == "machine-upgrades" then
         table.insert(modules, entry)
-        assert(table_size(entry.module_effects) == 1, "This module prototype has multiple effects! That is no good: " .. entry.name)
+        assert(table_size(entry.module_effects) == 1, "This module prototype has multiple effects! Someone else messed with this module: " 
+            .. entry.name .. ".\nEffects = " .. serpent.line(entry.module_effects) 
+            .. ".\n Affecting mods:" .. serpent.line(prototypes.get_history("module", entry.name).changed or {}))
         for key in pairs(entry.module_effects) do 
             if module_effect_categories[key] then table.insert(module_effect_categories[key], entry)
             else module_effect_categories[key] = {entry} end
