@@ -2,6 +2,8 @@
 Version: 0.69.4
 Date: ????
   Changes:
+    - Additional safeguards against adding player characters to upgrade lists.
+    - Additional safeguards against other mods causing crashes by fucking with my modules.
 ---------------------------------------------------------------------------------------------------
 Version: 0.69.3
 Date: 2025-06-21

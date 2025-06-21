@@ -113,3 +113,9 @@ end
 data:extend(modules)
 data:extend(negative_modules)
 
+---I need a copy to make sure no other mods mess with my effects in data-final fixes
+local total_modules = util.table.deepcopy(modules)
+for _, entry in pairs(negative_modules) do 
+  table.insert(total_modules, util.table.deepcopy(entry))
+end
+mupgrade_lib.module_prototypes_copy = total_modules
