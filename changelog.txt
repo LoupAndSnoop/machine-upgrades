@@ -2,6 +2,9 @@
 Version: 0.69.7
 Date: ????
   Changes:
+    - Fixed incompatibility with beacon-rebalance. This may cause issues with multiplayer. Please report them if you find any. In order to fix it, wretlaw would need to modify his interface to store his whitelist in storage, not local. This way I can whitelist in init/on_config_changed (which will then avoid desyncs).
+    - Incompatible with Delta Beacon Rebalance, as I have no way to whitelist my beacons from it.
+    - Fixed bug that kept making multiple beacons on an entity.
 ---------------------------------------------------------------------------------------------------
 Version: 0.69.6
 Date: 2025-06-21

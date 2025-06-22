@@ -4,7 +4,8 @@
     "title": "Machine Upgrades",
     "author": "Loup&Snoop, 2025",
     "factorio_version": "2.0",
-    "dependencies": ["base >= 2.0.55"
+    "dependencies": ["base >= 2.0.55",
+        "! delta-beacon-rebalance"
     ],
     "description": "This mod provides an API to make technologies that upgrade crafting machines (at runtime). Example: Researching X => Assemblers +10% Speed, or Chemical Plants +20% Productivity. This mod does nothing by itself, and is intended to be used with other mods.",
     "homepage": "https://discord.gg/CaDJzEj557",

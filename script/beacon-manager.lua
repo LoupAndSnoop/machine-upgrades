@@ -20,8 +20,8 @@ end
 local function try_get_beacon(entity)
     if not entity.valid then return end
     
-    local beacon_array = storage.compound_entity_parent_to_children[entity]
-    if beacon_array then return beacon_array[1] end --Already exists
+    local beacon_array = storage.compound_entity_parent_to_children[entity.unit_number]
+    if beacon_array then return game.get_entity_by_unit_number(beacon_array[1]) end --Already exists
     
     --Get accurate position as the center of the collision box.
     local left_top, right_bottom = entity.bounding_box.left_top, entity.bounding_box.right_bottom
@@ -34,6 +34,7 @@ local function try_get_beacon(entity)
         force = entity.force_index,
         raise_built = true,
     }
+    
     assert(new_beacon, "Something stopped us from making a special beacon. Alert the mod creator of how this happened.")
     entity_linker.link_entities(entity, new_beacon)
 

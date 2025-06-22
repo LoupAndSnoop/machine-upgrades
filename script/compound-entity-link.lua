@@ -77,10 +77,11 @@ local function on_entity_destroyed(entity_deregister_id, spare_parent)
     end
 
     local parent = game.get_entity_by_unit_number(parent_no)
+
     if parent and parent.valid and not spare_parent then parent.destroy() end
+    --log("Entity number = " .. entity_no .. ", Children of " .. parent_no .." : " .. serpent.line(storage.compound_entity_parent_to_children[parent_no]))--.. ". Parent position = " .. serpent.line(parent.position))
     storage.compound_entity_positions[parent_no] = nil
     storage.compound_entity_parent_to_children[parent_no] = nil
-
     --Now clear the working storage
     storage.compound_entity_deregistry[entity_deregister_id] = nil
     storage.compound_entity_deregistry_rev[entity_no] = nil

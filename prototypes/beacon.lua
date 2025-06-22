@@ -74,6 +74,8 @@ if mupgrade_lib.DEBUG_MODE then
         graphics_set = util.table.deepcopy(data.raw.beacon.beacon.graphics_set),
         selection_priority = 100,
         selectable_in_game = true,
+        hidden = false,
+        hidden_in_factoriopedia = false,
     }
     beacon_debug_properties.graphics_set.base_layer = "air-object"--"higher-object-above"
     beacon_debug_properties.graphics_set.top_layer = "air-object"--"higher-object-above"
@@ -87,7 +89,7 @@ if mupgrade_lib.DEBUG_MODE then
     end
 
     for key, value in pairs(beacon_debug_properties) do
-    mupgrade_beacon[key] = value
+      mupgrade_beacon[key] = value
     end
 end
 

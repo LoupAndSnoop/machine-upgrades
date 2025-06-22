@@ -1,3 +1,5 @@
+require("__machine-upgrades__.compat.beacon-rebalance")
+
 require("__machine-upgrades__/lib/lib")
 
 require("__machine-upgrades__.script.event-lib")
