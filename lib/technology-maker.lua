@@ -222,7 +222,7 @@ function mupgrade_tech_maker.find_machines_with_crafting_category(crafting_categ
     for category in pairs(defines.prototypes.entity) do
         for name, proto in pairs(data.raw[category] or {}) do
             if proto.crafting_categories and mupgrade_tech_maker.array_find(proto.crafting_categories, crafting_category) --has the category
-                and ((not proto.effect_receiver) or proto.effect_receiver.uses_beacon_effects) --Only works if it has modules
+                and ((not proto.effect_receiver) or (proto.effect_receiver.uses_beacon_effects ~= false)) --Only works if it has modules
                 and name ~= "character" and proto.type ~= "character" then --DO NOT touch the player character!
                     --(proto.module_slots and proto.module_slots > 0) --Only works if it has modules
                 table.insert(entity_names, name)
