@@ -142,6 +142,18 @@ local function pack_for_control_stage(mupgrade_data)
 end
 
 
+--Some mods automatically add prototypes that should be hidden automatically from descriptions.
+--Input a prototype. If it should be hidden, then return TRUE. Else, false
+local function should_compat_hide_prototype(prototype)
+    if mods["factory-levels"] then
+        if string.find(prototype.name, "-level-", 1, true) 
+            and prototype.hidden_in_factoriopedia then return true end
+    end
+
+    return false
+end
+
+
 ---Go handle all the relevant MUpgrade data, making all the effects on the relevant techs, during data stage.
 ---@param mupgrade_data_array MUpgradeData[]
 ---@param manual_pack boolean? (default to false). If set false, then the MUpgrade mod will automatically pack up and take care of everything in control stage as well. Set false to do it full auto.
@@ -170,7 +182,8 @@ function mupgrade_tech_maker.handle_modifier_data(mupgrade_data_array, manual_pa
         for _, entry in pairs(mupgrade_data.entity_names) do
             --Also automatically hide if it is is hidden.
             local proto = find_entity_prototype(entry)
-            if not to_hide[entry] and not proto.hidden then table.insert(displayed_entity_names, entry)
+            if not to_hide[entry] and not proto.hidden 
+                and not should_compat_hide_prototype(proto) then table.insert(displayed_entity_names, entry)
             end
         end
 
