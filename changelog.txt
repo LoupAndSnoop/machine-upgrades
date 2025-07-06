@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.69.9
-Date: ????
+Date: 2025-07-06
   Changes:
     - Fixed crash from too many entities in localized strings.
     - Added compatibility for Factory levels mod.
