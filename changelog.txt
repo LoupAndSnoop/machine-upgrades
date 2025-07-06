@@ -2,6 +2,7 @@
 Version: 0.69.9
 Date: ????
   Changes:
+    - Fixed crash from too many entities in localized strings.
 ---------------------------------------------------------------------------------------------------
 Version: 0.69.8
 Date: 2025-07-04

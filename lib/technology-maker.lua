@@ -79,12 +79,24 @@ function mupgrade_tech_maker.make_modifier(base_icon, modifier_name, machine_nam
     --Make the description
     local sign = (stated_effect_strength > 0) and "+" or "-"
     local full_description = {""}
+    local included_entries = 0
+    local MAX_ENTRIES = 32 --I can reasonably see 34 lines with 150% interface size
     for _, each_name in pairs(entity_names or {}) do
+        if #full_description >= 17 then --Wrapping in case too many localised strings.
+            local sub_description = util.table.deepcopy(full_description)
+            full_description = {"", sub_description}
+        end
         --Find the best name
         local proto = find_entity_prototype(each_name)
         local true_name = proto.localised_name or {"entity-name." .. each_name}
-        table.insert(full_description, {"","[entity=" .. each_name .. "] ",true_name,"\n"})
+        local single_line = {"","[entity=" .. each_name .. "] ",true_name,"\n"}
+        table.insert(full_description, single_line)
+
+        --Truncation in case so many entries that it goes offscreen
+        included_entries = included_entries + 1
+        if included_entries >= MAX_ENTRIES then table.insert(full_description, {"",".",".",".","\n"}); break end
     end
+
     table.insert(full_description, {"", machine_name or "modifier-description.mupgrade-default-effect-description",
          ": ", modifier_data.name, " " .. sign .. tostring(math.abs(stated_effect_strength)) .. "%"})
 
