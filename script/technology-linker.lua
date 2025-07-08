@@ -258,11 +258,14 @@ remote.add_interface("machine-upgrades-techlink",{
     end,
 })
 
+
+
 ---Update everything from that tech, optionally limited to just that force.
 ---@param technology_name string
 ---@param force LuaForce? No force means every force
 local function update_from_tech(technology_name, force)
     assert(prototypes.technology[technology_name], "Invalid technology name: " .. technology_name)
+    --assert(storage.linked_technologies[technology_name], "No linked technology effects were found under the technology name: " .. technology_name)
     local effects = storage.linked_technologies[technology_name]
     for _, entry in pairs(effects or {}) do
         update_entity(entry.entity_name, force)
@@ -270,8 +273,7 @@ local function update_from_tech(technology_name, force)
 end
 ---Update ALL entities via ALL techs.
 local function update_all_entities()
-    for key in pairs(storage.linked_technologies) do 
-        update_from_tech(key) end
+    for key in pairs(storage.linked_technologies) do update_from_tech(key) end
 end
 
 --#endregion
@@ -295,13 +297,27 @@ event_lib.on_init("tech-link-update-all", update_all_next_tick)
 event_lib.on_configuration_changed("tech-link-update-all", update_all_next_tick)
 
 event_lib.on_event(defines.events.on_technology_effects_reset,
-    "tech-link-update-all", update_all_entities)
+    "tech-link-update-all", update_all_next_tick)
 
 event_lib.on_event(defines.events.on_research_finished, "tech-link-update", function(event)
   update_from_tech(event.research.name, event.research.force) end)
 
+--[[
+---Remove stale data for any technologies that don't currently exist.
+local function remove_stale_technology_references()
+    local stale_technology_effects = {}
+    for technology_name, effect in pairs(storage.linked_technologies) do 
+        if not prototypes.technology[technology_name] then
+            table.insert(stale_technology_names, technology_name)
+        end
+    end
 
+    for _, technology_name in pairs(stale_technology_names) do
+        remove_technology_effect
 
+    end
+end
+]]
 
 --[[
     --In clear_cache

@@ -300,7 +300,7 @@ end
 _G.mupgrade = mupgrade or {}
 --Print all event handlers, to see what is currently subscribed.
 function mupgrade.print_events()
-    game.print(lib.to_string())
+    if game then game.print(lib.to_string()) end
     log("Rubia event log:")
     log(lib.to_string())
 end

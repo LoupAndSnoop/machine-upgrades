@@ -2,6 +2,7 @@
 Version: 0.69.10
 Date: ????
   Changes:
+    - Fixed a crash from installing a mod that uses this library, then uninstalling that mod, while also having a third mod that nukes everything else at the start.
 ---------------------------------------------------------------------------------------------------
 Version: 0.69.9
 Date: 2025-07-06
