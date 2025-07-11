@@ -2,6 +2,7 @@
 Version: 0.69.11
 Date: ????
   Changes:
+    - Fixed incompatibility with "Everything has Quality"
 ---------------------------------------------------------------------------------------------------
 Version: 0.69.10
 Date: 2025-07-08
