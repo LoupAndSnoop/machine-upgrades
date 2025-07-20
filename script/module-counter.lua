@@ -2,7 +2,7 @@
 
 
 local module_counter = {}
-
+local OTHER_MODDER_MESSAGE = "\n\nPlease let that mod's creator know: \"Please blacklist any modules with 'mupgrade' in the name to avoid the crash.\"\n\n"
 
 --All modules that belong to us
 --local module_names = {"mupgrade-module-prod", "mupgrade-module-quality", "mupgrade-module-speed", "mupgrade-module-efficiency","mupgrade-module-pollution"}
@@ -14,12 +14,24 @@ for _, entry in pairs(all_modules) do
         table.insert(modules, entry)
         assert(table_size(entry.module_effects) == 1, "This module prototype has multiple effects! Someone else messed with this module: " 
             .. entry.name .. ".\nEffects = " .. serpent.line(entry.module_effects) 
-            .. ".\n Affecting mods:" .. serpent.line(prototypes.get_history("module", entry.name).changed or {}))
+            .. ".\n\n Mods that are causing the crash: " .. serpent.line(prototypes.get_history("module", entry.name).changed or {})
+            .. OTHER_MODDER_MESSAGE)
         for key in pairs(entry.module_effects) do 
             if module_effect_categories[key] then table.insert(module_effect_categories[key], entry)
             else module_effect_categories[key] = {entry} end
         end
     end
+end
+
+
+--Show all the mods that are editting these prototypes
+local function display_history(prototype1, prototype2)
+    local mods_affecting1 = prototypes.get_history("module", prototype1.name).changed
+    local mods_affecting2 = prototypes.get_history("module", prototype2.name).changed
+    local all_mods = mupgrade_lib.hashset_union(mupgrade_lib.array_to_hashset(mods_affecting1),
+                    mupgrade_lib.array_to_hashset(mods_affecting2))
+    local all_mods = mupgrade_lib.hashset_to_array(all_mods)
+    return "\n\nMod(s) causing the crash: " .. serpent.line(all_mods) .. OTHER_MODDER_MESSAGE
 end
 
 --Now I need to get two for each category. Positive and negative.
@@ -28,9 +40,11 @@ for category, modules in pairs(module_effect_categories) do
     assert(table_size(modules) == 2, "I'm expecting to find exactly 1 positive and 1 negative module under this category (" 
         .. category .. "), but I found these: " .. serpent.block(modules))
     assert(modules[1].module_effects[category] * modules[2].module_effects[category] < 0, "I expected the modules for this category (" .. category 
-        .. ") to have effects that are opposite in sign! " .. serpent.block(modules))
+        .. ") to have effects that are opposite in sign! " .. serpent.block(modules)
+        .. display_history(modules[1], modules[2]))
     assert(math.abs(modules[1].module_effects[category]) == math.abs(modules[2].module_effects[category]), "Positive and negative modules for this category (" .. category
-        .. ") were supposed to have equal magnitude in effect, but opposite sign! " .. serpent.block(modules))
+        .. ") were supposed to have equal magnitude in effect, but opposite sign! " .. serpent.block(modules)
+        .. display_history(modules[1], modules[2]))
     local positive_index = (modules[1].module_effects[category] > 0) and 1 or 2
     module_table[category] = {
         positive_module_name = modules[positive_index].name,

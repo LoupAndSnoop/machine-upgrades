@@ -27,6 +27,36 @@ function mupgrade_lib.dictionary_values_to_hashset(dictionary)
   return hashset
 end
 
+--Array goes in, out comes a hashset where hashset[value]=true
+--for all entries in the old array. Naturally combines duplicates.
+---@param array any[]
+---@return table
+function mupgrade_lib.array_to_hashset(array)
+  local hashset = {}
+  for _, value in pairs(array) do
+    hashset[value]=true
+  end
+  return hashset
+end
+
+--Hashset goes in. Array form comes out.
+---@param hashset table
+---@return any[]
+function mupgrade_lib.hashset_to_array(hashset)
+  local array = {}
+  for key in pairs(hashset) do
+    table.insert(array, key)
+  end
+  return array
+end
+
+--Two hashsets go in. Out comes their union as a separate object
+function mupgrade_lib.hashset_union(hashset1, hashset2)
+  local union = {}
+  for entry in pairs(hashset1) do union[entry] = true end
+  for entry in pairs(hashset2) do union[entry] = true end
+  return union
+end
 
 
 ---Assert that the given mupgrade data is valid. Usable in data or control stages
