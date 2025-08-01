@@ -35,7 +35,8 @@ local function try_get_beacon(entity)
         raise_built = true,
     }
     
-    assert(new_beacon, "Something stopped us from making a special beacon. Alert the mod creator of how this happened.")
+    assert(new_beacon, "Something stopped us from making a special beacon around this entity: "
+        .. entity.name .. ". It is likely that a different mod is destroying this beacon before it was finished being made. Alert the mod creator of how this happened.\n\n")
     entity_linker.link_entities(entity, new_beacon)
 
     return new_beacon
