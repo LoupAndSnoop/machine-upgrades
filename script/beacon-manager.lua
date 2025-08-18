@@ -13,6 +13,21 @@ end
 
 --In this mod, all the entities in the compound-entity link have an entity-beacon relationship. We'll use that.
 
+--This is an error message
+local beacon_error_message_half = "\n\n[color=255,125,0][font=default-semibold]This crash is likely caused by a DIFFERENT mod (not by Machine Upgrades/Rubia).[/font][/color] "
+        .. "To fix, please identify which mod causes the crash, and send its author this report. "
+        .. "Don't report to Machine Upgrades/Rubia (I can't fix it, and will just mark it as an incompatibility).\n\n"
+        .. "----------------\n"
+        .. "Crash Report:\nMachine Upgrades uses invisible beacons to create its technology effects. "
+        .. "It seems that a mod is automatically destroying an entity called mupgrade-beacon as soon as it is created, in the event callback of on_built_entity (or related build event). "
+        .. "Machine Upgrades performs a consistency check immediately after creating a mupgrade beacon to ensure it has not been destroyed. "
+        .. "This assertion has been tripped. Destroying such entities while they are being created can cause other mods to crash (including Machine Upgrades). "
+        .. "You can blacklist mupgrade-beacon from being destroyed, but you will probably have the same issue with a different mod in the future. "
+        .. "Please avoid destroying other mods' entities immediately after creation. "
+        .. "For reproduction, you will want to recreate the player's whole modlist (not just Rubia/Machine Upgrades). "
+        .. "This mupgrade-beacon's construction was triggered by the placement of the following entity: "
+
+
 ---Try to make a beacon for that entity. If it already has one, just return the reference.
 ---If we fail, just return nil.
 ---@param entity LuaEntity
@@ -35,8 +50,7 @@ local function try_get_beacon(entity)
         raise_built = true,
     }
     
-    assert(new_beacon, "Something stopped us from making a special beacon around this entity: "
-        .. entity.name .. ". It is likely that a different mod is destroying this beacon before it was finished being made. Alert the mod creator of how this happened.\n\n")
+    assert(new_beacon, beacon_error_message_half .. entity.name)
     entity_linker.link_entities(entity, new_beacon)
 
     return new_beacon
