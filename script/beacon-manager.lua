@@ -13,8 +13,9 @@ end
 
 --In this mod, all the entities in the compound-entity link have an entity-beacon relationship. We'll use that.
 
---This is an error message
-local beacon_error_message_half = "\n\n[color=255,125,0][font=default-semibold]This crash is likely caused by a DIFFERENT mod (not by Machine Upgrades/Rubia).[/font][/color] "
+--This is an error message for the case when a mupgrade-beacon was immediately destroyed by another mod in an entity-build callback.
+--This error has happened before, and it will continue to happen whenever someone does this.
+local BEACON_DESTROYED_ERROR_MSG = "\n\n[color=255,125,0][font=default-semibold]This crash is likely caused by a DIFFERENT mod (not by Machine Upgrades/Rubia).[/font][/color] "
         .. "To fix, please identify which mod causes the crash, and send its author this report. "
         .. "Don't report to Machine Upgrades/Rubia (I can't fix it, and will just mark it as an incompatibility).\n\n"
         .. "----------------\n"
@@ -50,7 +51,7 @@ local function try_get_beacon(entity)
         raise_built = true,
     }
     
-    assert(new_beacon, beacon_error_message_half .. entity.name)
+    assert(new_beacon, BEACON_DESTROYED_ERROR_MSG .. entity.name)
     entity_linker.link_entities(entity, new_beacon)
 
     return new_beacon
