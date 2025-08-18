@@ -27,8 +27,6 @@ local BEACON_DESTROYED_ERROR_MSG = "\n\n[color=255,125,0][font=default-semibold]
         .. "Please avoid destroying other mods' entities immediately after creation. "
         .. "For reproduction, you will want to recreate the player's whole modlist (not just Rubia/Machine Upgrades). "
         .. "This mupgrade-beacon's construction was triggered by the placement of the following entity: "
-
-
 ---Try to make a beacon for that entity. If it already has one, just return the reference.
 ---If we fail, just return nil.
 ---@param entity LuaEntity
