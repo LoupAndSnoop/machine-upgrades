@@ -3,6 +3,7 @@ Version: 0.69.13
 Date: ????
   Changes:
     - Added more diagnostics and error reporting for cases where OTHER mods cause mupgrades to crash. Mostly so you stop reporting to me bugs that I have nothing to do with.
+    - Added an emergency failsafe to totally disable the mod in the event that people have horrible nonstop crashes.
 ---------------------------------------------------------------------------------------------------
 Version: 0.69.12
 Date: 2025-07-20

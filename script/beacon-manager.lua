@@ -17,7 +17,8 @@ end
 --This error has happened before, and it will continue to happen whenever someone does this.
 local BEACON_DESTROYED_ERROR_MSG = "\n\n[color=255,125,0][font=default-semibold]This crash is caused by an incompatibility from a mod with Machine Upgrades. "
         .. "Please identify which mod causes the crash, and send that mod's author this report with your save file. "
-        .. "Do not send to the developer of Machine Upgrades/Rubia.[/font][/color] \n\n"
+        .. "Do not send to the developer of Machine Upgrades/Rubia.[/font][/color]\n\n"
+        .. "While you wait for a fix, the mod setting 'Disable Machine Upgrades' will avoid this crash, but the mod will not function!\n\n"
         .. "----------------\n"
         .. "Crash Report for the modder:\n"
         .. "This crash happened when Machine Upgrades created a 'mupgrade-beacon', immediately asserted that it was valid, but it was destroyed "

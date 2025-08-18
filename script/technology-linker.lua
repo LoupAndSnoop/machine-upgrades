@@ -179,6 +179,8 @@ remote.add_interface("machine-upgrades-techlink",{
     ---@param entity_handler string Permanent string to reference that entity, so if the entity name changes/migrates, we don't have problems!
     ---@param auto_merge_handler boolean? If set true, then automatically merge handler with whatever was there previously. It is recommended to turn this on to merge with other mod.
     add_technology_effect = function(technology_name, entity_name, effect, entity_handler, auto_merge_handler)
+        if settings.startup["mupgrade-disable"].value then return end --Error
+
         assert(prototypes.technology[technology_name],"Invalid technology name was passed: " .. technology_name)
         local entity_name_array = (type(entity_name) == "table") and entity_name or {entity_name--[[@as string]]}
         for _, each_entity_name in pairs(entity_name_array) do
@@ -258,8 +260,6 @@ remote.add_interface("machine-upgrades-techlink",{
     end,
 })
 
-
-
 ---Update everything from that tech, optionally limited to just that force.
 ---@param technology_name string
 ---@param force LuaForce? No force means every force
@@ -302,7 +302,34 @@ event_lib.on_event(defines.events.on_technology_effects_reset,
 event_lib.on_event(defines.events.on_research_finished, "tech-link-update", function(event)
   update_from_tech(event.research.name, event.research.force) end)
 
+
+--Warning around the special override setting to disable the whole mod's functionality.
+if settings.startup["mupgrade-disable"].value then
+    local DISABLED_WARNING_MESSAGE = "WARNING: Machine Upgrades was disabled in its mod settings!"
+                .. "\nPlease untick the 'disable machine upgrades' mod setting once compatibility has been restored."
+                .. "\nThis warning will repeat regularly to intentionally annoy you to make sure whatever compatibility issue gets fixed."
+    log(DISABLED_WARNING_MESSAGE)
+    --First warning
+    event_lib.on_nth_tick(1, "mupgrade-disable-warning-first", function()
+        game.print(DISABLED_WARNING_MESSAGE)
+        event_lib.on_nth_tick(1, "mupgrade-disable-warning-first", nil)
+    end)
+    --Repeat to be annoying.
+    event_lib.on_nth_tick(60 * 60 * 60, "mupgrade-disable-warning", function()
+        game.print(DISABLED_WARNING_MESSAGE)
+    end)
+end
+
+
 --[[
+event_lib.on_nth_tick(1, "tech-link-force-update", function()
+        update_all_entities()
+        event_lib.on_nth_tick(1, "tech-link-force-update", nil)
+    end)
+
+
+
+
 ---Remove stale data for any technologies that don't currently exist.
 local function remove_stale_technology_references()
     local stale_technology_effects = {}
