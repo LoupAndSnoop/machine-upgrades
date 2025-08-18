@@ -17,7 +17,7 @@ end
 --This error has happened before, and it will continue to happen whenever someone does this.
 local BEACON_DESTROYED_ERROR_MSG = "\n\n[color=255,125,0][font=default-semibold]This crash is likely caused by a DIFFERENT mod (not by Machine Upgrades/Rubia).[/font][/color] "
         .. "To fix, please identify which mod causes the crash, and send its author this report. "
-        .. "Don't report to Machine Upgrades/Rubia (I can't fix it, and will just mark it as an incompatibility).\n\n"
+        .. "Don't report to Machine Upgrades/Rubia. I can't fix it from my end, and can only mark it as incompatibile.\n\n"
         .. "----------------\n"
         .. "Crash Report:\nMachine Upgrades uses invisible beacons to create its technology effects. "
         .. "It seems that a mod is automatically destroying an entity called mupgrade-beacon as soon as it is created, in the event callback of on_built_entity (or related build event). "
