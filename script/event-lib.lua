@@ -184,9 +184,7 @@ do_on_built = function(event)
         local owner = cell and cell.owner
         if owner and owner.is_player() then player_index = owner.player.index end
     end
-
-    game.print("Event = " .. event.name .. ", Entity = " .. entity.prototype.name)
-
+    
     --Standard unique event calls
     for _, fun in pairs(events[event.name] or {}) do fun(event) end
 
