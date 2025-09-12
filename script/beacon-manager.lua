@@ -127,6 +127,14 @@ function beacon_manager.remove_beacon_from(entity_no)
     entity_linker.kill_children_of(entity_no)
 end
 
+--If this entity is a mupgrade beacon, destroy it.
+local function kill_if_beacon(entity)
+    if not entity or not entity.valid then return end
+    if entity.prototype.name == "mupgrade-beacon" 
+        and not storage.compound_entity_child_to_parent[entity.unit_number] then 
+        entity.destroy()
+    end
+end
 
 ---Set this entity-handler to be updated at next convenience
 ---@param entity_handler string String handler for that specific type of entity
@@ -172,6 +180,8 @@ event_lib.on_init("beacon-manager-initialize", initialize)
 event_lib.on_configuration_changed("beacon-manager-initialize", initialize)
 --event_lib.on_configuration_changed("beacon-manager-cancel-updates", cancel_updates)
 event_lib.on_nth_tick(1, "beacon-manager-regular_update", beacon_manager.regular_update)
+event_lib.on_event(defines.events.on_entity_cloned, "block-cloned-beacon",
+    function(event) kill_if_beacon(event.destination) end)
 
 --Some mods fuck with forces
 event_lib.on_event({defines.events.on_force_created, defines.events.on_force_reset},"beacon-manager-forces-changed",

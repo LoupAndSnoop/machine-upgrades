@@ -2,6 +2,7 @@
 Version: 0.69.14
 Date: ????
   Changes:
+    - Added compatibility with cloning via map editor
 ---------------------------------------------------------------------------------------------------
 Version: 0.69.13
 Date: 2025-08-18
