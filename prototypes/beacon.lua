@@ -12,7 +12,7 @@ local mupgrade_beacon =
     order = "zzzzzz[hidden]-mua[mu beacon]-a",
     flags = {"placeable-player", "not-rotatable", "not-blueprintable", "no-copy-paste",
       "no-automated-item-insertion", "no-automated-item-removal", "get-by-unit-number",
-      "not-upgradable"},--"hide-alt-info", "player-creation"},
+      "not-upgradable", "not-selectable-in-game"},--"hide-alt-info", "player-creation"},
     --minable = {mining_time = 0.2, result = "beacon"},
     fast_replaceable_group = "beacon",
 

@@ -42,7 +42,7 @@ local function try_get_beacon(entity)
     local new_beacon = entity.surface.create_entity{
         name = "mupgrade-beacon",
         position = center,--entity.position,
-        force = entity.force_index,
+        force = "neutral",--entity.force_index,
         raise_built = true,
     }
     
