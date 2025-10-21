@@ -11,7 +11,8 @@ local mupgrade_beacon =
     icons = {{icon = "__base__/graphics/icons/beacon.png", tint = {1,0.7,1}}},
     order = "zzzzzz[hidden]-mua[mu beacon]-a",
     flags = {"placeable-player", "not-rotatable", "not-blueprintable", "no-copy-paste",
-      "no-automated-item-insertion", "no-automated-item-removal", "get-by-unit-number"},--"hide-alt-info", "player-creation"},
+      "no-automated-item-insertion", "no-automated-item-removal", "get-by-unit-number",
+      "not-upgradable"},--"hide-alt-info", "player-creation"},
     --minable = {mining_time = 0.2, result = "beacon"},
     fast_replaceable_group = "beacon",
 
