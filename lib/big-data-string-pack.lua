@@ -56,7 +56,7 @@ local function bigpack(name, data)
         flags = { "not-on-map", "hide-alt-info", "not-blueprintable", "not-flammable" },
         localised_name = string.format("BIGDATA[%s]", name),
         localised_description = encode(data),
-        hidden_in_factoriopedia = false,
+        hidden_in_factoriopedia = true,--false,
         order = "z",
     }
 end
