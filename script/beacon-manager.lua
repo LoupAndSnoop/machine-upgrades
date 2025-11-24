@@ -91,11 +91,13 @@ local function update_all_entity_moduling(entity_handler, force_set)
     --Make a lookup table for each entity, and force
     local module_lookup = {}
     for force in pairs(force_set or {}) do
-        module_lookup[force.index] = {}
-        for _, entity_name in pairs(entity_name_all) do
-            local modules_to_add, total_count = module_counter.get_total_moduling(entity_name, force)
-            assert(total_count <= MAX_MODULE_COUNT, "Beacon module count exceeded. Please tell mod creator.")
-            module_lookup[force.index][entity_name] = modules_to_add
+        if force and force.valid then
+            module_lookup[force.index] = {}
+            for _, entity_name in pairs(entity_name_all) do
+                local modules_to_add, total_count = module_counter.get_total_moduling(entity_name, force)
+                assert(total_count <= MAX_MODULE_COUNT, "Beacon module count exceeded. Please tell mod creator.")
+                module_lookup[force.index][entity_name] = modules_to_add
+            end
         end
     end
 
