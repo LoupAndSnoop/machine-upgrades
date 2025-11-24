@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.69.18
-Date: ????
+Date: 2025-11-24
   Changes:
     - Fix crash for forces being merged.
     - Fix incompatibility with voidcraft
