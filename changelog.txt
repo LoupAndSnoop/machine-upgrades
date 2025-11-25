@@ -2,6 +2,7 @@
 Version: 0.69.19
 Date: ????
   Changes:
+    - Fix incompatibility with beacon interfaces mod.
 ---------------------------------------------------------------------------------------------------
 Version: 0.69.18
 Date: 2025-11-24

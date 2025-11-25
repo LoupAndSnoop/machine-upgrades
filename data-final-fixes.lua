@@ -9,7 +9,7 @@ end
 --Make sure all crafting machines can accept a mupgrade module effect
 for category in pairs(defines.prototypes.entity) do
     for _, proto in pairs(data.raw[category] or {}) do
-        if proto.allowed_module_categories then
+        if proto.allowed_module_categories and proto.crafting_categories then
             table.insert(proto.allowed_module_categories, "mupgrade")
         end
     end
