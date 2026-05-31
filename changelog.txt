@@ -2,6 +2,7 @@
 Version: 0.69.21
 Date: ????
   Changes:
+    - Another incompatibility fix for "Module Category Defaults" mod. Made it more robust too, for good measure.
 ---------------------------------------------------------------------------------------------------
 Version: 0.69.20
 Date: 2026-05-31

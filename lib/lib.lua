@@ -58,6 +58,17 @@ function mupgrade_lib.hashset_union(hashset1, hashset2)
   return union
 end
 
+--Returns true if anything in the list == that value.
+function mupgrade_lib.list_contains(list, value)
+  for _, entry in pairs(list or {}) do
+    if entry == value then
+      return true
+    end
+  end
+  return false
+end
+
+
 
 ---Assert that the given mupgrade data is valid. Usable in data or control stages
 ---@param mupgrade_data MUpgradeData

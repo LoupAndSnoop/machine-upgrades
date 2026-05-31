@@ -1,0 +1,1 @@
+require("__machine-upgrades__/compat/module-category-defaults")

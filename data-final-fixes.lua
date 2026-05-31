@@ -9,8 +9,15 @@ end
 --Make sure all crafting machines can accept a mupgrade module effect
 for category in pairs(defines.prototypes.entity) do
     for _, proto in pairs(data.raw[category] or {}) do
-        if proto.allowed_module_categories and proto.crafting_categories then
+        if proto.allowed_module_categories and proto.crafting_categories
+            and not mupgrade_lib.list_contains(proto.allowed_module_categories, "mupgrade") then
             table.insert(proto.allowed_module_categories, "mupgrade")
         end
+    end
+end
+--Same for recipes.
+for _, proto in pairs(data.raw["recipe"] or {}) do
+    if proto.allowed_module_categories and not mupgrade_lib.list_contains(proto.allowed_module_categories, "mupgrade") then
+        table.insert(proto.allowed_module_categories, "mupgrade")
     end
 end
