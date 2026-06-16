@@ -132,6 +132,36 @@ function module_counter.get_total_moduling(entity_name, force)
     return module_total, total_modules
 end
 
+---Get a table that describes total modifiers for a given entity. Used as an
+---interface to factory planners.
+---@param entity_name string
+---@return table<string, float> table of modifier => value
+function module_counter.get_modifiers(entity_name)
+	local moduling = module_counter.get_total_moduling(entity_name, game.forces["player"])
+	local module_to_type = {
+		["mupgrade-module-prod"] = "productivity",
+		["mupgrade-module-speed"] = "speed",
+		["mupgrade-module-efficiency"] = "consumption",
+		["mupgrade-module-pollution"] = "pollution"
+	}
+	if script.active_mods["quality"] then
+		module_to_type["mupgrade-module-quality"] = "quality"
+	end
 
+	local ret = {}
+	for module, c in pairs(moduling) do
+		local t = module_to_type[module]
+		local strength = prototypes.item[module].module_effects[t]
+		local mult = strength * c
+		if not ret[t] then ret[t] = mult else ret[t] = ret[t] + mult end
+	end
+	return ret
+end
+
+remote.add_interface("machine-upgrades-get-modifiers", {
+	get_modifiers = function(entity_name)
+		return module_counter.get_modifiers(entity_name)
+	end
+})
 
 return module_counter
